@@ -10,7 +10,8 @@
     "dev": "tsx watch index.ts",
     "start": "ts-node index.ts",
     "lint": "eslint **/*.ts",
-    "format": "eslint **/*.ts --fix"
+    "format": "eslint **/*.ts --fix",
+    "prepare": "husky"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
