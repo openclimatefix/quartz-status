@@ -51,6 +51,9 @@ expressWs.app.ws("/", function (ws) {
   // console.log('socket', req.testing);
 });
 
+// Favicon
+app.use("/favicon.ico", express.static("./favicon.ico"));
+
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
 });

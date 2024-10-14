@@ -10,8 +10,4 @@ const ComponentsRouter = express.Router();
 
 ComponentsRouter.use("/apis", APIsRouter);
 
-ComponentsRouter.get("/", (req, res) => {
-  res.send("Components");
-});
-
 export default ComponentsRouter;
