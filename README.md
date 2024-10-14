@@ -8,20 +8,34 @@ The Quartz Status API is a RESTful API that allows you to retrieve the status of
 The Quartz Status API has the following endpoints:
 
 - `/health` - Returns the health of the Quartz Status API
-- `/health/all` - Returns the overall health of the Quartz framework
-- `/components/airflow` - Returns the health of the Airflow instance
-- `/components/apis/uk-pv-api/health` - Returns the health of the UK PV API
-- `/components/apis/uk-pv-api/last_forecast_run` - Returns the last time the forecast was run
-- `/components/apis/uk-sites-api` - Returns the health of the UK Sites API
-- `/components/apis/uk-sites-api/last_forecast_run` - Returns the last time the forecast was run
-- `/components/consumers` - Returns the health of the OCF consumers
-- `/components/consumers/gsp` - Returns the health of the GSP consumer
-- `/components/consumers/pv` - Returns the health of the PV consumer
-- `/components/consumers/nwp` - Returns the health of the NWP consumer
-- `/components/consumers/national-nwp` - Returns the health of the National NWP consumer
-- `/components/consumers/national-satellite` - Returns the health of the National Satellite consumer
-- `/components/models/pv-net-2` - Returns the health of the PV Net 2 model
-- `/components/models/pv-net-2/last-run` - Returns the last time the model was run
+
+[//]: # (- `/health/all` - Returns the overall health of the Quartz framework)
+
+[//]: # (- `/components/airflow` - Returns the health of the Airflow instance)
+
+- `/components/apis/uk-pv-national-api/health` - Returns the health of the UK PV API
+
+[//]: # (- `/components/apis/uk-pv-api/last_forecast_run` - Returns the last time the forecast was run)
+
+[//]: # (- `/components/apis/uk-sites-api` - Returns the health of the UK Sites API)
+
+[//]: # (- `/components/apis/uk-sites-api/last_forecast_run` - Returns the last time the forecast was run)
+
+[//]: # (- `/components/consumers` - Returns the health of the OCF consumers)
+
+[//]: # (- `/components/consumers/gsp` - Returns the health of the GSP consumer)
+
+[//]: # (- `/components/consumers/pv` - Returns the health of the PV consumer)
+
+[//]: # (- `/components/consumers/nwp` - Returns the health of the NWP consumer)
+
+[//]: # (- `/components/consumers/national-nwp` - Returns the health of the National NWP consumer)
+
+[//]: # (- `/components/consumers/national-satellite` - Returns the health of the National Satellite consumer)
+
+[//]: # (- `/components/models/pv-net-2` - Returns the health of the PV Net 2 model)
+
+[//]: # (- `/components/models/pv-net-2/last-run` - Returns the last time the model was run)
 
 ## Getting Started
 ### Installing
