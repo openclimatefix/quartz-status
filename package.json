@@ -2,7 +2,7 @@
   "name": "status-api",
   "version": "1.0.0",
   "description": "Open Climate Fix Status API",
-  "main": "index.js",
+  "main": "index.ts",
   "author": "braddf",
   "license": "MIT",
   "private": false,
