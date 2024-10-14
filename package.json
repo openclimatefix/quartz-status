@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "dev": "ts-node index.ts --watch",
+    "dev": "tsx watch index.ts",
     "start": "ts-node index.ts",
     "lint": "eslint **/*.ts",
     "format": "eslint **/*.ts --fix"
@@ -29,6 +29,7 @@
     "eslint-plugin-prettier": "^5.1.3",
     "husky": "^9.0.5",
     "prettier": "^3.2.4",
+    "tsx": "^4.19.1",
     "typescript": "^5.3.3"
   },
   "engines": {
