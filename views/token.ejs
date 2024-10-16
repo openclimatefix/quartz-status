@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Quartz Status</title>
+    </head>
+    <body>
+        <section class="container">
+            <h1>Success.</h1>
+            <p>A fresh auth token has been successfully created for <span class="code"><%= email %></span>:</p>
+            <p id="Token" class="code"><%= token %></p>
+            <p>You may copy/paste this token to access authorized routes on the various Quartz APIs.</p>
+            <p>If you have any issues, please get in touch at <a href="mailto:quartz.support@openclimatefix.org">quartz.support@openclimatefix.org</a> and we'll do our best to help.
+            </p>
+        </section>
+    </body>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            position: relative;
+            flex-direction: column;
+            justify-content: start;
+            height: 100vh;
+            max-width: min(90vw, 800px);
+            margin: 3rem auto;
+        }
+        h1 {
+            font-size: 3rem;
+            margin: 0 0 1rem 0;
+        }
+        p {
+            display: block;
+            font-size: 1rem;
+            margin: 1rem 0;
+            white-space: break-spaces;
+            word-break: break-all;
+        }
+        .code {
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #bf0000;
+            background-color: #f0f0f0;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.2rem;
+        }
+        #Token {
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+    </style>
+</html>
