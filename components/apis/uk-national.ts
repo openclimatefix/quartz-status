@@ -5,12 +5,12 @@
  */
 import express from "express";
 
-const UkPvNationalRouter = express.Router();
+const UkNationalRouter = express.Router();
 
-UkPvNationalRouter.get("/health", async (req, res) => {
+UkNationalRouter.get("/status", async (req, res) => {
   // Get the API URL from the environment and check if it is set
-  const apiUrl = process.env.UK_PV_NATIONAL_API_URL;
-  if (!apiUrl) {
+  const nationalApiUrl = process.env.UK_PV_NATIONAL_API_URL;
+  if (!nationalApiUrl) {
     res.status(500).send({
       status: "error",
       message: "UK_PV_NATIONAL_API_URL is not set"
@@ -19,13 +19,13 @@ UkPvNationalRouter.get("/health", async (req, res) => {
   }
 
   // Get solar status from the API
-  const solarStatusResponse = await fetch(`${apiUrl}/v0/solar/GB/status`);
+  const solarStatusResponse = await fetch(`${nationalApiUrl}/v0/solar/GB/status`);
 
   // Check if the response is successful, and if not, send an error message
   if (!solarStatusResponse?.status) {
     res.status(500).send({
       status: "error",
-      message: "Failed to ping UK_PV_NATIONAL_API_URL"
+      message: `Failed to ping ${nationalApiUrl}`
     });
     return;
   } else if (solarStatusResponse.status !== 200) {
@@ -44,4 +44,4 @@ UkPvNationalRouter.get("/health", async (req, res) => {
   });
 });
 
-export default UkPvNationalRouter;
+export default UkNationalRouter;
