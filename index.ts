@@ -10,11 +10,12 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT || 4000;
 const serverUrl = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_URL;
+process.env.SERVER_URL = serverUrl;
 
 app.set("view engine", "ejs");
 app.set("views", "./views");
 
-if (!serverUrl) {
+if (!process.env.SERVER_URL) {
   throw "Make sure you have set the SERVER_URL in the environment.";
 }
 
