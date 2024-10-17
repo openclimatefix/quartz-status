@@ -35,22 +35,27 @@ if (!process.env.AUTH0_ISSUER_BASE_URL || !process.env.AUTH0_AUDIENCE) {
 /**
  Routes
   - These route handlers will be executed from the root path of the app
+  - They can be used to define general routes, such as health checks
+  - Route handlers are separated for testability
 */
-app.get("/", (req: Request, res: Response) => {
+export const rootHandler = (req: Request, res: Response) => {
   res.send({ status: "ok", message: "This is the Quartz Status API." });
-});
+};
+app.get("/", rootHandler);
 
-app.get("/health", (req: Request, res: Response) => {
+export const healthHandler = (req: Request, res: Response) => {
   res.send({ status: "ok", message: "Quartz Status API is operating normally." });
-});
+};
+app.get("/health", healthHandler);
 
 // Admin route example – only accessible to users with the `read:admin` scope in Auth0
-app.get("/admin", checkJwt, checkScopes, (req: Request, res: Response) => {
+export const adminHandler = (req: Request, res: Response) => {
   res.send({
     status: "ok",
     message: "Admin API is working and authorized behind the read:admin scope."
   });
-});
+};
+app.get("/admin", checkJwt, checkScopes, adminHandler);
 
 /**
  * Mount the components router on the `/components` path
@@ -84,6 +89,4 @@ app.use("/favicon.ico", express.static("./favicon.ico"));
 // Custom unauthorized error handler with messages for expected Auth0 errors
 app.use(unauthorizedErrorMiddleware);
 
-app.listen(port, () => {
-  console.log(`[server]: Server is running on port ${port} at ${serverUrl}`);
-});
+export { app, port, serverUrl };
