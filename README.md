@@ -29,13 +29,20 @@ The Quartz Status API has the following endpoints:
 
 [//]: # (- `/components/consumers/nwp` - Returns the health of the NWP consumer)
 
-[//]: # (- `/components/consumers/national-nwp` - Returns the health of the National NWP consumer)
+[//]: # (- `/uk/consumers/ecmwf` - Returns the health of the ECMWF NWP consumer)
+[//]: # (- `/india/consumers/ecmwf` - Returns the health of the ECMWF NWP consumer)
 
 [//]: # (- `/components/consumers/national-satellite` - Returns the health of the National Satellite consumer)
 
 [//]: # (- `/components/models/pv-net-2` - Returns the health of the PV Net 2 model)
 
 [//]: # (- `/components/models/pv-net-2/last-run` - Returns the last time the model was run)
+
+# region/component/name/call 
+# Try to be simialr in different reginos
+
+# fun things like could be good
+# region/all
 
 ## Getting Started
 ### Installing
