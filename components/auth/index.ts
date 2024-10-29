@@ -5,7 +5,7 @@ const AuthRouter = express.Router();
 
 // Auth0 Authentication + Authorization Flow part 1 – '/authorize' endpoint
 // Redirect to Auth0 login page to authenticate the user in the browser
-AuthRouter.get("/login", async (req: Request, res: Response) => {
+export const authLoginHandler = async (req: Request, res: Response) => {
   const { AUTH0_CLIENT_ID, AUTH0_ISSUER_BASE_URL, AUTH0_AUDIENCE, SERVER_URL } = process.env;
   // Construct the URL with all the URL encoded auth parameters
   const urlencoded = new URLSearchParams();
@@ -19,12 +19,10 @@ AuthRouter.get("/login", async (req: Request, res: Response) => {
   // to access their profile and other information, then they will be redirected back to the
   // callback URL with an authorization code (below).
   res.redirect(url);
-});
+};
+AuthRouter.get("/login", authLoginHandler);
 
-// Auth0 Authentication + Authorization Flow part 2 – '/oauth/token' endpoint
-// Fetch access token using authentication code from call above and display token page
-AuthRouter.get("/callback", async (req: Request, res: Response) => {
-  const { code } = req.query;
+export const getAccessTokenUsingCode = async (code: string) => {
   const { AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_ISSUER_BASE_URL, SERVER_URL } = process.env;
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
@@ -41,15 +39,49 @@ AuthRouter.get("/callback", async (req: Request, res: Response) => {
     body: urlencoded,
     redirect: "follow" as RequestRedirect
   };
-  const response = await fetch(`${AUTH0_ISSUER_BASE_URL}/oauth/token`, requestOptions);
-  const data = await response.json();
+  try {
+    const response = await fetch(`${AUTH0_ISSUER_BASE_URL}/oauth/token`, requestOptions);
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching access token", error);
+    throw error;
+  }
+};
 
-  // decode the JWT token to get the user's email address
-  const tokenParts = data.id_token.split(".");
+export const parseUserDataFromIdToken = (token: string) => {
+  if (!token || !token.includes(".")) {
+    return {};
+  }
+  const tokenParts = token.split(".");
   const buff = Buffer.from(tokenParts[1], "base64");
   const text = buff.toString("utf-8");
-  const tokenData = JSON.parse(text);
-  data.email = tokenData.email;
+  return JSON.parse(text);
+};
+
+// Auth0 Authentication + Authorization Flow part 2 – '/oauth/token' endpoint
+// Fetch access token using authentication code from call above and display token page
+AuthRouter.get("/callback", async (req: Request, res: Response) => {
+  const { code } = req.query;
+  if (typeof code !== "string") {
+    console.error("No code found in query", code);
+    res.status(400).send("Missing or invalid code parameter.");
+    return;
+  }
+  const data = await getAccessTokenUsingCode(code as string);
+  if (!data.access_token) {
+    console.error("No access token found in response", data);
+    res.status(500).send("Error fetching access token.");
+    return;
+  }
+
+  // decode the JWT token to get the user's email address
+  const parsedTokenObject = parseUserDataFromIdToken(data.id_token);
+  if (!parsedTokenObject.email) {
+    console.error("No email found in token", parsedTokenObject);
+    res.status(500).send("Error parsing email from token.");
+    return;
+  }
+  data.email = parsedTokenObject.email;
 
   // Render a simple page with the user's access token
   res.render("token", { token: data.access_token, email: data.email });
@@ -65,12 +97,6 @@ export const unauthorizedErrorMiddleware = (
   if ([401, 403].includes(err.statusCode)) {
     if (err.code) {
       switch (err.code) {
-        case "credentials_required":
-          res.status(401).send({
-            status: "error",
-            message: "Unauthorized error: credentials required."
-          });
-          break;
         case "invalid_token":
           res.status(401).send({
             status: "error",
@@ -84,16 +110,17 @@ export const unauthorizedErrorMiddleware = (
           });
           break;
         default:
-          res.status(401).send({
+          res.status(err.statusCode).send({
             status: "error",
-            message: `Generic ${err.code}`
+            message: `${err.code}`
           });
           break;
       }
       return next();
     }
+    console.log("err generic", err);
     // Generic unauthorized error message
-    res.status(401).send({
+    res.status(err.statusCode || 401).send({
       status: "error",
       message: "Unauthorized: please provide a valid token to access this resource."
     });

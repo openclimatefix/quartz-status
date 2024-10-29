@@ -2,6 +2,11 @@ import { auth, requiredScopes } from "express-oauth2-jwt-bearer";
 import dotenv from "dotenv";
 dotenv.config();
 
+export const authOptions = {
+  audience: process.env.AUTH0_AUDIENCE,
+  issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
+  tokenSigningAlg: "RS256"
+};
 /**
  * Middleware function to check JWT token validity.
  *
@@ -11,11 +16,7 @@ dotenv.config();
  * @returns {function} middleware - Express middleware function that checks the JWT token.
  * @param config
  */
-export const checkJwt = auth({
-  audience: process.env.AUTH0_AUDIENCE,
-  issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-  tokenSigningAlg: "RS256"
-});
+export const checkJwt = auth(authOptions);
 
 /**
  * Middleware function to check JWT token scopes.
