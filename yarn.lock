@@ -1006,7 +1006,7 @@
     "@types/node" "*"
     form-data "^4.0.0"
 
-"@types/supertest@^6.0.2":
+"@types/supertest@*", "@types/supertest@^6.0.2":
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/@types/supertest/-/supertest-6.0.2.tgz#2af1c466456aaf82c7c6106c6b5cbd73a5e86588"
   integrity sha512-137ypx2lk/wTQbW6An6safu9hXmajAifU/s7szAHLN/FeIm5w7yR0Wkl9fdJMRSHwOn4HLAI0DaB2TOORuhPDg==
@@ -1014,7 +1014,7 @@
     "@types/methods" "^1.1.4"
     "@types/superagent" "^8.1.0"
 
-"@types/ws@*":
+"@types/ws@*", "@types/ws@7.x || 8.x":
   version "8.5.12"
   resolved "https://registry.yarnpkg.com/@types/ws/-/ws-8.5.12.tgz#619475fe98f35ccca2a2f6c137702d85ec247b7e"
   integrity sha512-3tPRkv1EtkDpzlgyKyI8pGsGZAGPEaXeu0DOj5DI25Ja91bdAYddYHbADRYVrZMRbfW+1l5YwXVDKohDJNQxkQ==
@@ -3677,6 +3677,15 @@ supertest@^7.0.0:
     methods "^1.1.2"
     superagent "^9.0.1"
 
+superwstest@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/superwstest/-/superwstest-2.0.4.tgz#48bd9567f34929e993cea3b8280c53ef48957d88"
+  integrity sha512-7u9H76yvLMdjwdrD0BFdc2JN6m2dcEQ8h7+nERrIFGADDw0HBA+clG1Yx/aQ0B/RqKzrHNkVVkGzvVBeknoCeg==
+  dependencies:
+    "@types/supertest" "*"
+    "@types/ws" "7.x || 8.x"
+    ws "7.x || 8.x"
+
 supports-color@^5.3.0:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
@@ -3925,6 +3934,11 @@ write-file-atomic@^4.0.2:
   dependencies:
     imurmurhash "^0.1.4"
     signal-exit "^3.0.7"
+
+"ws@7.x || 8.x":
+  version "8.18.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.0.tgz#0d7505a6eafe2b0e712d232b42279f53bc289bbc"
+  integrity sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==
 
 ws@^7.4.6:
   version "7.5.10"

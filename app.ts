@@ -71,17 +71,17 @@ app.use("/components", ComponentsRouter);
 app.use("/auth", AuthRouter);
 
 // WebSockets
-const expressWs: Instance = express_ws(app);
-expressWs.app.ws("/ws", function (ws) {
-  ws.on("message", function (msg) {
-    console.log(msg);
-  });
-  ws.on("connection", function (connection) {
-    console.log("Connected");
-    console.log(connection);
-  });
-  // console.log('socket', req.testing);
-});
+// const expressWs: Instance = express_ws(app);
+// expressWs.app.ws("/ws", function (ws) {
+//   ws.on("message", function (msg) {
+//     console.log(msg);
+//   });
+//   ws.on("connection", function (connection) {
+//     console.log("Connected");
+//     console.log(connection);
+//   });
+// console.log('socket', req.testing);
+// });
 
 // Favicon
 app.use("/favicon.ico", express.static("./favicon.ico"));

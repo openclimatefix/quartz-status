@@ -89,11 +89,3 @@ describe("GET /admin", () => {
     );
   });
 });
-
-describe("websockets", () => {
-  it("should return a 200 status", async () => {
-    const ws = supertest(app);
-    const response = await ws.get("/ws");
-    expect(response.status).toBe(200);
-  });
-});

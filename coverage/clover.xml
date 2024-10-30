@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1730284228550" clover="3.2.0">
-  <project timestamp="1730284228550" name="All files">
-    <metrics statements="474" coveredstatements="462" conditionals="65" coveredconditionals="59" methods="8" coveredmethods="8" elements="547" coveredelements="529" complexity="0" loc="474" ncloc="474" packages="6" files="8" classes="8"/>
+<coverage generated="1730286392972" clover="3.2.0">
+  <project timestamp="1730286392973" name="All files">
+    <metrics statements="474" coveredstatements="470" conditionals="65" coveredconditionals="59" methods="8" coveredmethods="8" elements="547" coveredelements="537" complexity="0" loc="474" ncloc="474" packages="6" files="8" classes="8"/>
     <package name="status-api">
-      <metrics statements="92" coveredstatements="80" conditionals="6" coveredconditionals="3" methods="3" coveredmethods="3"/>
+      <metrics statements="92" coveredstatements="88" conditionals="6" coveredconditionals="3" methods="3" coveredmethods="3"/>
       <file name="app.ts" path="/Users/brad/Projects/status-api/app.ts">
-        <metrics statements="92" coveredstatements="80" conditionals="6" coveredconditionals="3" methods="3" coveredmethods="3"/>
+        <metrics statements="92" coveredstatements="88" conditionals="6" coveredconditionals="3" methods="3" coveredmethods="3"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -81,14 +81,14 @@
         <line num="73" count="1" type="stmt"/>
         <line num="74" count="1" type="stmt"/>
         <line num="75" count="1" type="stmt"/>
-        <line num="76" count="0" type="stmt"/>
-        <line num="77" count="0" type="stmt"/>
-        <line num="78" count="0" type="stmt"/>
-        <line num="79" count="0" type="stmt"/>
-        <line num="80" count="0" type="stmt"/>
-        <line num="81" count="0" type="stmt"/>
-        <line num="82" count="0" type="stmt"/>
-        <line num="83" count="0" type="stmt"/>
+        <line num="76" count="1" type="stmt"/>
+        <line num="77" count="1" type="stmt"/>
+        <line num="78" count="1" type="stmt"/>
+        <line num="79" count="1" type="stmt"/>
+        <line num="80" count="1" type="stmt"/>
+        <line num="81" count="1" type="stmt"/>
+        <line num="82" count="1" type="stmt"/>
+        <line num="83" count="1" type="stmt"/>
         <line num="84" count="1" type="stmt"/>
         <line num="85" count="1" type="stmt"/>
         <line num="86" count="1" type="stmt"/>
