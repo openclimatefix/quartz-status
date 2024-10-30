@@ -2,6 +2,7 @@
 import { getMockRequestHandlerObjects } from "../helpers/mockObjects";
 import { unauthorizedErrorMiddleware } from "../../../components/auth";
 import { parseUserDataFromIdToken } from "../../../components/auth";
+import * as authFunctions from "../../../components/auth";
 
 describe("Test auth token parsing function", () => {
   it("should return an empty object if no token is given", async () => {
@@ -63,5 +64,23 @@ describe("Test unspecified auth errors", () => {
     // Assert
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.send).toHaveBeenCalledWith(expected);
+  });
+});
+
+describe("getAccessTokenUsingCode", () => {
+  it("should return the access token and id token", async () => {
+    const access_token = "eyTestTestTest";
+    const id_token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJ0ZXN0QG9jZi5vcmciLCJpYXQiOjE1MTYyMzkwMjJ9.SEWDykSlBzo8jAggFbdBalVUt7MIlx3EMdhkhrHGZr0";
+    jest.spyOn(global, "fetch").mockResolvedValue({
+      json: async () => ({ access_token, id_token })
+    } as Response);
+    const response = await authFunctions.getAccessTokenUsingCode("12345");
+    expect(response.access_token).toBe(access_token);
+    expect(response.id_token).toBe(id_token);
+  });
+  it("should return an error if the fetch fails", async () => {
+    jest.spyOn(global, "fetch").mockRejectedValue("Failed to fetch");
+    await expect(authFunctions.getAccessTokenUsingCode("12345")).rejects.toThrow("Failed to fetch");
   });
 });

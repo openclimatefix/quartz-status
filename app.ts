@@ -72,7 +72,7 @@ app.use("/auth", AuthRouter);
 
 // WebSockets
 const expressWs: Instance = express_ws(app);
-expressWs.app.ws("/", function (ws) {
+expressWs.app.ws("/ws", function (ws) {
   ws.on("message", function (msg) {
     console.log(msg);
   });

@@ -29,6 +29,23 @@ describe("GET /auth/callback", () => {
     expect(response.status).toBe(400);
     expect(response.text).toBe("Missing or invalid code parameter.");
   });
+  it("should return a 500 status if an error occurs while fetching the access token", async () => {
+    jest.spyOn(authFunctions, "getAccessTokenUsingCode").mockRejectedValue(new Error("Test error"));
+    const response = await request(app).get("/auth/callback?code=12345");
+    expect(response.status).toBe(500);
+    expect(response.text).toBe("Error getting access token.");
+  });
+  it("should return a 500 status if an error occurs while parsing email from token.", async () => {
+    const access_token = "eyTestTestTest";
+    const id_token = "eyTestTestTest";
+    jest
+      .spyOn(authFunctions, "getAccessTokenUsingCode")
+      .mockResolvedValue({ access_token, id_token });
+    jest.spyOn(authFunctions, "parseUserDataFromIdToken").mockReturnValue({});
+    const response = await request(app).get("/auth/callback?code=12345");
+    expect(response.status).toBe(500);
+    expect(response.text).toBe("Error parsing email from token.");
+  });
   it("should return a 200 status if an access token is found", async () => {
     // stub the getAccessTokenUsingCode function
     const access_token = "eyTestTestTest";

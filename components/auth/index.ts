@@ -44,7 +44,7 @@ export const getAccessTokenUsingCode = async (code: string) => {
     return response.json();
   } catch (error) {
     console.error("Error fetching access token", error);
-    throw error;
+    throw Error(error as string);
   }
 };
 
@@ -67,24 +67,29 @@ AuthRouter.get("/callback", async (req: Request, res: Response) => {
     res.status(400).send("Missing or invalid code parameter.");
     return;
   }
-  const data = await getAccessTokenUsingCode(code as string);
-  if (!data.access_token) {
-    console.error("No access token found in response", data);
-    res.status(500).send("Error fetching access token.");
-    return;
-  }
+  try {
+    const data = await getAccessTokenUsingCode(code as string);
+    if (!data.access_token) {
+      console.error("No access token found in response", data);
+      res.status(500).send("Error fetching access token.");
+      return;
+    }
 
-  // decode the JWT token to get the user's email address
-  const parsedTokenObject = parseUserDataFromIdToken(data.id_token);
-  if (!parsedTokenObject.email) {
-    console.error("No email found in token", parsedTokenObject);
-    res.status(500).send("Error parsing email from token.");
-    return;
-  }
-  data.email = parsedTokenObject.email;
+    // decode the JWT token to get the user's email address
+    const parsedTokenObject = parseUserDataFromIdToken(data.id_token);
+    if (!parsedTokenObject.email) {
+      console.error("No email found in token", parsedTokenObject);
+      res.status(500).send("Error parsing email from token.");
+      return;
+    }
+    data.email = parsedTokenObject.email;
 
-  // Render a simple page with the user's access token
-  res.render("token", { token: data.access_token, email: data.email });
+    // Render a simple page with the user's access token
+    res.render("token", { token: data.access_token, email: data.email });
+  } catch (error) {
+    console.error("Error getting access token", error);
+    res.status(500).send("Error getting access token.");
+  }
 });
 
 export const unauthorizedErrorMiddleware = (
