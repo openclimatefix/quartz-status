@@ -1,6 +1,5 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
-import express_ws, { Instance } from "express-ws";
 import ComponentsRouter from "./components";
 import { checkJwt, checkScopes } from "./middleware/auth";
 import AuthRouter, { unauthorizedErrorMiddleware } from "./components/auth";
