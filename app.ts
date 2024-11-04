@@ -59,7 +59,7 @@ app.get("/admin", checkJwt, checkScopes, adminHandler);
 /**
  * Export the API spec for use in the docs
  */
-export type ApiSpec = Tspec.DefineApiSpec<{
+export type GeneralApiSpec = Tspec.DefineApiSpec<{
   tags: ["General"];
   paths: {
     "/": {
