@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import ComponentsRouter from "./components";
 import { checkJwt, checkScopes } from "./middleware/auth";
 import AuthRouter, { unauthorizedErrorMiddleware } from "./components/auth";
+import { Tspec } from "tspec";
+import { AuthenticatedRouteResponses, RouteResponse, StatusMessageResponse } from "./types";
 
 dotenv.config();
 
@@ -29,31 +31,62 @@ if (!process.env.AUTH0_ISSUER_BASE_URL || !process.env.AUTH0_AUDIENCE) {
 //   console.log("middleware");
 //   return next();
 // });
-
 /**
  Routes
   - These route handlers will be executed from the root path of the app
   - They can be used to define general routes, such as health checks
   - Route handlers are separated for testability
 */
-export const rootHandler = (req: Request, res: Response) => {
+export const rootHandler = (req: Request, res: Response<StatusMessageResponse>) => {
   res.send({ status: "ok", message: "This is the Quartz Status API." });
 };
 app.get("/", rootHandler);
 
-export const healthHandler = (req: Request, res: Response) => {
+export const healthHandler = (req: Request, res: Response<StatusMessageResponse>) => {
   res.send({ status: "ok", message: "Quartz Status API is operating normally." });
 };
 app.get("/health", healthHandler);
 
 // Admin route example – only accessible to users with the `read:admin` scope in Auth0
-export const adminHandler = (req: Request, res: Response) => {
+export const adminHandler = (req: Request, res: Response<StatusMessageResponse>) => {
   res.send({
     status: "ok",
     message: "Admin API is working and authorized behind the read:admin scope."
   });
 };
 app.get("/admin", checkJwt, checkScopes, adminHandler);
+
+/**
+ * Export the API spec for use in the docs
+ */
+export type ApiSpec = Tspec.DefineApiSpec<{
+  tags: ["General"];
+  paths: {
+    "/": {
+      get: {
+        summary: "Root path";
+        description: "This is the root path of the Quartz Status API.";
+        responses: RouteResponse<StatusMessageResponse>;
+      };
+    };
+    "/health": {
+      get: {
+        summary: "Health check";
+        description: "Check the health of the Quartz Status API.";
+        responses: RouteResponse<StatusMessageResponse>;
+      };
+    };
+    "/admin": {
+      security: "jwt";
+      get: {
+        summary: "Admin API";
+        description: "This is an example of an admin API endpoint, which requires the read:admin scope.";
+        responses: AuthenticatedRouteResponses<StatusMessageResponse>;
+        security: "jwt";
+      };
+    };
+  };
+}>;
 
 /**
  * Mount the components router on the `/components` path
@@ -64,7 +97,7 @@ app.get("/admin", checkJwt, checkScopes, adminHandler);
 app.use("/components", ComponentsRouter);
 
 /**
- * As above for Auth routes, e.g. login, logout, callback
+ * As above for Auth routes, e.g. login, callback
  */
 app.use("/auth", AuthRouter);
 
