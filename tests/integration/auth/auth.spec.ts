@@ -22,7 +22,6 @@ describe(`GET ${URLsToTest.login}`, () => {
     expect(response.status).toBe(302);
     expect(response.header.location).toBe(url);
   });
-  π;
 });
 
 describe(`GET ${URLsToTest.callback}`, () => {
