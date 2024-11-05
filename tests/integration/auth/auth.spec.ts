@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config({ path: ".env.test" });
 import request from "supertest";
 import { app } from "../../../app";
-import * as authFunctions from "../../../components/auth";
+import * as authFunctions from "../../../auth";
 
 afterEach(() => {
   jest.restoreAllMocks();

@@ -1,8 +1,7 @@
 // Test generic other 401 error
 import { getMockRequestHandlerObjects } from "../helpers/mockObjects";
-import { unauthorizedErrorMiddleware } from "../../../components/auth";
-import { parseUserDataFromIdToken } from "../../../components/auth";
-import * as authFunctions from "../../../components/auth";
+import { unauthorizedErrorMiddleware, parseUserDataFromIdToken } from "../../../auth";
+import * as authFunctions from "../../../auth";
 
 describe("Test auth token parsing function", () => {
   it("should return an empty object if no token is given", async () => {
