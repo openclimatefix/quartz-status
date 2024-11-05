@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { NextFunction } from "express-serve-static-core";
-import { StatusMessageResponse } from "../../types";
+import { ExpressViewResponse, StatusMessageResponse } from "../types";
 import { Tspec } from "tspec";
 
 const AuthRouter = express.Router();
@@ -152,7 +152,7 @@ export type AuthApiSpec = Tspec.DefineApiSpec<{
         summary: "Callback";
         description: "Automatic redirect from /auth/login – fetches the access token using the authentication code from the login page.";
         responses: {
-          200: Response;
+          200: ExpressViewResponse;
           400: StatusMessageResponse;
           500: StatusMessageResponse;
         };

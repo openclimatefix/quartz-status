@@ -1,8 +1,8 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
-import ComponentsRouter from "./components";
+import RegionsRouter from "./regions";
 import { checkJwt, checkScopes } from "./middleware/auth";
-import AuthRouter, { unauthorizedErrorMiddleware } from "./components/auth";
+import AuthRouter, { unauthorizedErrorMiddleware } from "./auth";
 import { Tspec } from "tspec";
 import { AuthenticatedRouteResponses, RouteResponse, StatusMessageResponse } from "./types";
 
@@ -94,7 +94,7 @@ export type GeneralApiSpec = Tspec.DefineApiSpec<{
  * in separate files, and mount them all under the `/components` path
  * in the app.
  */
-app.use("/components", ComponentsRouter);
+app.use("/regions", RegionsRouter);
 
 /**
  * As above for Auth routes, e.g. login, callback

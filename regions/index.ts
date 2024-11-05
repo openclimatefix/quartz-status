@@ -4,10 +4,10 @@
  * e.g. the `APIsRouter` router mounts to `/apis` path.
  */
 import express from "express";
-import APIsRouter from "./apis";
+import APIsRouter from "./GB/apis";
 
-const ComponentsRouter = express.Router();
+const RegionsRouter = express.Router();
 
-ComponentsRouter.use("/apis", APIsRouter);
+RegionsRouter.use("/GB/apis", APIsRouter);
 
-export default ComponentsRouter;
+export default RegionsRouter;

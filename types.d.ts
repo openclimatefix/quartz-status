@@ -1,6 +1,9 @@
 export interface StatusMessageResponse {
-  status: string;
+  status: string | number;
   message: string;
+}
+export interface ExpressViewResponse {
+  render(view: string, locals?: Record<string, any>): void;
 }
 export type RouteResponse<T> = {
   200: T;
