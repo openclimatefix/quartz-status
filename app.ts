@@ -79,7 +79,7 @@ export type GeneralApiSpec = Tspec.DefineApiSpec<{
     "/admin": {
       security: "jwt";
       get: {
-        summary: "Admin API";
+        summary: "Admin example";
         description: "This is an example of an admin API endpoint, which requires the read:admin scope.";
         responses: AuthenticatedRouteResponses<StatusMessageResponse>;
         security: "jwt";
@@ -116,6 +116,7 @@ app.use("/auth", AuthRouter);
 
 // Favicon
 app.use("/favicon.ico", express.static("./favicon.ico"));
+app.use("/quartz_logo.svg", express.static("./quartz_logo.svg"));
 
 // Custom unauthorized error handler with messages for expected Auth0 errors
 app.use(unauthorizedErrorMiddleware);
