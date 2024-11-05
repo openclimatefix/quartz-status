@@ -11,23 +11,28 @@ afterEach(() => {
   process.env = { ...ORIGINAL_ENV };
 });
 
-describe("GET /regions/GB/apis/national/status", () => {
+const URLsToTest = {
+  status: "/regions/GB/apis/national/status",
+  recentForecast: "/regions/GB/apis/national/recent-forecast"
+};
+
+describe(`GET ${URLsToTest.status}`, () => {
   it("should return a 200 status", async () => {
-    const response = await request(app).get("/regions/GB/apis/national/status");
+    const response = await request(app).get(URLsToTest.status);
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("ok");
     expect(response.body.message).toBe("Forecast operating within normal parameters");
   });
   it("should return a 500 status if the UK_PV_NATIONAL_API_URL is not set", async () => {
     process.env.UK_PV_NATIONAL_API_URL = "";
-    const response = await request(app).get("/regions/GB/apis/national/status");
+    const response = await request(app).get(URLsToTest.status);
     expect(response.status).toBe(500);
     expect(response.body.status).toBe("error");
     expect(response.body.message).toBe("UK_PV_NATIONAL_API_URL is not set");
   });
   it("should return a 500 status if the fetch fails", async () => {
     process.env.UK_PV_NATIONAL_API_URL = "https://api.example.com";
-    const response = await request(app).get("/regions/GB/apis/national/status");
+    const response = await request(app).get(URLsToTest.status);
     expect(response.status).toBe(500);
     expect(response.body.status).toBe("error");
     expect(response.body.message).toBe("Failed to fetch status of https://api.example.com");
@@ -37,7 +42,7 @@ describe("GET /regions/GB/apis/national/status", () => {
     jest
       .spyOn(global, "fetch")
       .mockResolvedValue({ status: 400, statusText: "Bad Request" } as Response);
-    const response = await request(app).get("/regions/GB/apis/national/status");
+    const response = await request(app).get(URLsToTest.status);
     expect(response.status).toBe(400);
     expect(response.body.status).toBe(400);
     expect(response.body.message).toBe("Bad Request");
@@ -46,7 +51,7 @@ describe("GET /regions/GB/apis/national/status", () => {
 
 describe("GET /regions/GB/apis/national/recent-forecast", () => {
   it("should return a 200 status and correct default message", async () => {
-    const response = await request(app).get("/regions/GB/apis/national/recent-forecast");
+    const response = await request(app).get(URLsToTest.recentForecast);
     console.log("response", response.body);
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("ok");
@@ -54,46 +59,38 @@ describe("GET /regions/GB/apis/national/recent-forecast", () => {
   });
   it("should return a 500 status if the UK_PV_NATIONAL_API_URL is not set", async () => {
     process.env.UK_PV_NATIONAL_API_URL = "";
-    const response = await request(app).get("/regions/GB/apis/national/recent-forecast");
+    const response = await request(app).get(URLsToTest.recentForecast);
     expect(response.status).toBe(500);
     expect(response.body.status).toBe("error");
     expect(response.body.message).toBe("UK_PV_NATIONAL_API_URL is not set");
   });
   it("should return a 500 status if the API response is not successful", async () => {
     process.env.UK_PV_NATIONAL_API_URL = "https://api.example.com";
-    const response = await request(app).get("/regions/GB/apis/national/recent-forecast");
+    const response = await request(app).get(URLsToTest.recentForecast);
     expect(response.status).toBe(500);
     expect(response.body.status).toBe("error");
     expect(response.body.message).toBe("Failed to fetch recent forecast data");
   });
   it("should return a 400 status if an invalid time window is provided", async () => {
-    const response = await request(app).get(
-      "/regions/GB/apis/national/recent-forecast?time-window=15"
-    );
+    const response = await request(app).get(`${URLsToTest.recentForecast}?time-window=15`);
     expect(response.status).toBe(400);
     expect(response.body.status).toBe("error");
     expect(response.body.message).toBe("Invalid time window. Please use 30, 60 or 120 minutes");
   });
   it("should return a 200 status and correct message for a 30-minute time window", async () => {
-    const response = await request(app).get(
-      "/regions/GB/apis/national/recent-forecast?time-window=30"
-    );
+    const response = await request(app).get(`${URLsToTest.recentForecast}?time-window=30`);
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("ok");
     expect(response.body.message).toBe("Latest forecast run within past 30 minutes");
   });
   it("should return a 200 status and correct message for a 60-minute time window", async () => {
-    const response = await request(app).get(
-      "/regions/GB/apis/national/recent-forecast?time-window=60"
-    );
+    const response = await request(app).get(`${URLsToTest.recentForecast}?time-window=60`);
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("ok");
     expect(response.body.message).toBe("Latest forecast run within past 1 hour");
   });
   it("should return a 200 status and correct message for a 120-minute time window", async () => {
-    const response = await request(app).get(
-      "/regions/GB/apis/national/recent-forecast?time-window=120"
-    );
+    const response = await request(app).get(`${URLsToTest.recentForecast}?time-window=120`);
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("ok");
     expect(response.body.message).toBe("Latest forecast run within past 2 hours");
@@ -101,9 +98,7 @@ describe("GET /regions/GB/apis/national/recent-forecast", () => {
   it("should return a 500 status if the API response is not successful", async () => {
     // Mock the fetch function to return an error
     jest.spyOn(global, "fetch").mockRejectedValue("Failed to fetch");
-    const response = await request(app).get(
-      "/regions/GB/apis/national/recent-forecast?time-window=120"
-    );
+    const response = await request(app).get(`${URLsToTest.recentForecast}?time-window=120`);
     expect(response.status).toBe(500);
     expect(response.body.status).toBe("error");
     expect(response.body.message).toBe("Failed to fetch recent forecast data");
@@ -111,9 +106,7 @@ describe("GET /regions/GB/apis/national/recent-forecast", () => {
   it("should return a 500 status if the API response does not have a status", async () => {
     // Mock the fetch function to return an empty response
     jest.spyOn(global, "fetch").mockRejectedValue("error");
-    const response = await request(app).get(
-      "/regions/GB/apis/national/recent-forecast?time-window=120"
-    );
+    const response = await request(app).get(`${URLsToTest.recentForecast}?time-window=120`);
     expect(response.status).toBe(500);
     expect(response.body.status).toBe("error");
     expect(response.body.message).toBe("Failed to fetch recent forecast data");
@@ -123,9 +116,7 @@ describe("GET /regions/GB/apis/national/recent-forecast", () => {
     jest
       .spyOn(global, "fetch")
       .mockResolvedValue({ status: 400, statusText: "Bad Request" } as Response);
-    const response = await request(app).get(
-      "/regions/GB/apis/national/recent-forecast?time-window=120"
-    );
+    const response = await request(app).get(`${URLsToTest.recentForecast}?time-window=120`);
     expect(response.status).toBe(400);
     expect(response.body.status).toBe(400);
     expect(response.body.message).toBe("Bad Request");
@@ -136,9 +127,7 @@ describe("GET /regions/GB/apis/national/recent-forecast", () => {
       status: 200,
       json: async () => new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()
     } as Response);
-    const response = await request(app).get(
-      "/regions/GB/apis/national/recent-forecast?time-window=120"
-    );
+    const response = await request(app).get(`${URLsToTest.recentForecast}?time-window=120`);
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("error");
     expect(response.body.message).toBe("Latest forecast run outside of past 2 hours");
@@ -149,9 +138,7 @@ describe("GET /regions/GB/apis/national/recent-forecast", () => {
       status: 200,
       json: async () => "invalid date"
     } as Response);
-    const response = await request(app).get(
-      "/regions/GB/apis/national/recent-forecast?time-window=120"
-    );
+    const response = await request(app).get(`${URLsToTest.recentForecast}?time-window=120`);
     expect(response.status).toBe(500);
     expect(response.body.status).toBe("error");
     expect(response.body.message).toBe("Failed to parse the latest forecast run date");
