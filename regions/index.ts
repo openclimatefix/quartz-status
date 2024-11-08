@@ -5,9 +5,11 @@
  */
 import express from "express";
 import APIsRouter from "./GB/apis";
+import DataRouter from "./india/data";
 
 const RegionsRouter = express.Router();
 
 RegionsRouter.use("/GB/apis", APIsRouter);
+RegionsRouter.use("/india/data", DataRouter);
 
 export default RegionsRouter;

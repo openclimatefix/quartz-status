@@ -246,6 +246,29 @@
           }
         }
       }
+    },
+    "/regions/india/data/ruvnl/status": {
+      "get": {
+        "operationId": "RUVNLSpec_get_/regions/india/data/ruvnl/status",
+        "tags": [
+          "India Data"
+        ],
+        "summary": "India RUVNL data status",
+        "description": "Check the status of the RUVNL",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusMessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
