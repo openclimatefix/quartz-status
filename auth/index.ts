@@ -125,8 +125,6 @@ export const unauthorizedErrorMiddleware = (
       }
       return next();
     }
-    console.log("err generic", err);
-    // Generic unauthorized error message
     res.status(err.statusCode || 401).send({
       status: "error",
       message: "Unauthorized: please provide a valid token to access this resource."

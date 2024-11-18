@@ -3,25 +3,97 @@ import dotenv from "dotenv";
 import RegionsRouter from "./regions";
 import { checkJwt, checkScopes } from "./middleware/auth";
 import AuthRouter, { unauthorizedErrorMiddleware } from "./auth";
-import { Tspec } from "tspec";
+import { generateTspec, Tspec } from "tspec";
 import { AuthenticatedRouteResponses, RouteResponse, StatusMessageResponse } from "./types";
+import packageJson from "./package.json";
+import swaggerUi from "swagger-ui-express";
 
 dotenv.config();
 
+export const getPort = () => {
+  return typeof process.env.PORT === "string" && process.env.PORT.length
+    ? parseInt(process.env.PORT, 10)
+    : 4000;
+};
+
+export const initServer = async () => {
+  const serverUrl = process.env.SERVER_URL;
+  const port = getPort();
+
+  if (!serverUrl) {
+    console.log("doesn't have serverUrl");
+    throw Error("Make sure you have set the SERVER_URL in the environment.");
+  }
+
+  console.log("AUTH0_ISSUER_BASE_URL", process.env.AUTH0_ISSUER_BASE_URL);
+  if (!process.env.AUTH0_ISSUER_BASE_URL || !process.env.AUTH0_AUDIENCE) {
+    throw Error("Make sure you have AUTH0_ISSUER_BASE_URL and AUTH0_AUDIENCE in your .env file");
+  }
+
+  const tspecParams: Tspec.GenerateParams = {
+    outputPath: "./openapi.json",
+    openapi: {
+      title: "Status API",
+      version: packageJson.version,
+      description:
+        `API documentation for the Quartz Status API.\n` +
+        `The OpenAPI Spec can be found at [/openapi.json](${serverUrl}/openapi.json).`,
+      securityDefinitions: {
+        jwt: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT"
+        }
+      }
+    }
+  };
+
+  // programmatically generate openapi spec using Tspec
+  const openApiSpec = await generateTspec(tspecParams);
+  // serve the openapi spec
+  app.get("/openapi.json", (req, res) => {
+    res.json(openApiSpec);
+  });
+  // serve the openapi spec and swagger UI
+  app.use(
+    "/docs",
+    swaggerUi.serve,
+    swaggerUi.setup(openApiSpec, {
+      swaggerUrl: "/openapi.json",
+      swaggerOptions: {
+        // docExpansion: "none",
+        filter: true,
+        showExtensions: true,
+        showCommonExtensions: true,
+        url: `${serverUrl}/openapi.json`,
+        serverUrl: {
+          url: `${serverUrl}/openapi.json`,
+          description: "Server URL"
+        }
+      },
+      customfavIcon: "https://quartz.solar/favicon.ico",
+      customSiteTitle: "Quartz Status API Documentation",
+      customCss:
+        "html { -webkit-font-smoothing: antialiased; }" +
+        ".swagger-ui .topbar { background-color: #f8f9fa; } \n" +
+        ".topbar-wrapper {" +
+        "    justify-content: center;\n" +
+        "    padding: 1rem 0.5rem;" +
+        "}" +
+        ".topbar-wrapper .link {" +
+        "    content:url('/quartz_logo.svg');\n" +
+        "}"
+    })
+  );
+  return app.listen(port, () => {
+    console.log(`[server]: Server is running on port ${port} at ${serverUrl}`);
+  });
+};
+
 const app: Express = express();
-const port = process.env.PORT || 4000;
-const serverUrl = process.env.SERVER_URL;
 
 app.set("view engine", "ejs");
 app.set("views", "./views");
-
-if (!serverUrl) {
-  throw "Make sure you have set the SERVER_URL in the environment.";
-}
-
-if (!process.env.AUTH0_ISSUER_BASE_URL || !process.env.AUTH0_AUDIENCE) {
-  throw "Make sure you have AUTH0_ISSUER_BASE_URL and AUTH0_AUDIENCE in your .env file";
-}
 
 /**
  Global middleware
@@ -121,4 +193,4 @@ app.use("/quartz_logo.svg", express.static("./quartz_logo.svg"));
 // Custom unauthorized error handler with messages for expected Auth0 errors
 app.use(unauthorizedErrorMiddleware);
 
-export { app, port, serverUrl };
+export { app };

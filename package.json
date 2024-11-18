@@ -1,6 +1,6 @@
 {
   "name": "status-api",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Open Climate Fix Status API",
   "main": "app.ts",
   "author": "braddf",
@@ -12,7 +12,7 @@
     "lint": "eslint **/*.ts",
     "format": "eslint **/*.ts --fix",
     "prepare": "husky",
-    "test": "jest",
+    "test": "jest --coverage --forceExit",
     "test:watch": "jest --watch"
   },
   "dependencies": {

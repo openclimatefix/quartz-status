@@ -31,7 +31,35 @@ describe("Test auth token parsing function", () => {
   });
 });
 
-describe("Test unspecified auth errors", () => {
+describe("Test auth middleware function", () => {
+  it("should return a status message with an invalid token error", async () => {
+    // Arrange
+    const { req, res } = getMockRequestHandlerObjects();
+    const expected = {
+      status: "error",
+      message: "Unauthorized: invalid token."
+    };
+    const err = { statusCode: 401, code: "invalid_token" };
+    // Act
+    unauthorizedErrorMiddleware(err, req, res, jest.fn());
+    // Assert
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.send).toHaveBeenCalledWith(expected);
+  });
+  it("should return a status message with an insufficient scope error", async () => {
+    // Arrange
+    const { req, res } = getMockRequestHandlerObjects();
+    const expected = {
+      status: "error",
+      message: "Forbidden: insufficient scope – you must be an admin to access this resource."
+    };
+    const err = { statusCode: 403, code: "insufficient_scope" };
+    // Act
+    unauthorizedErrorMiddleware(err, req, res, jest.fn());
+    // Assert
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.send).toHaveBeenCalledWith(expected);
+  });
   it("should return a status message with a generic 401 error", async () => {
     // Arrange
     const { req, res } = getMockRequestHandlerObjects();
@@ -49,7 +77,6 @@ describe("Test unspecified auth errors", () => {
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.send).toHaveBeenCalledWith(expected);
   });
-
   it("should return a status message with a generic 403 error", async () => {
     // Arrange
     const { req, res } = getMockRequestHandlerObjects();
@@ -63,6 +90,16 @@ describe("Test unspecified auth errors", () => {
     // Assert
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.send).toHaveBeenCalledWith(expected);
+  });
+  it("should continue to the next middleware if the error is not 401 or 403", async () => {
+    // Arrange
+    const { req, res } = getMockRequestHandlerObjects();
+    const err = { statusCode: 500, code: "other_error" };
+    const next = jest.fn();
+    // Act
+    unauthorizedErrorMiddleware(err, req, res, next);
+    // Assert
+    expect(next).toHaveBeenCalled();
   });
 });
 
