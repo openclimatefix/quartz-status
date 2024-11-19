@@ -1,11 +1,13 @@
 import express, { Request, Response } from "express";
 import { NextFunction } from "express-serve-static-core";
+import { ExpressViewResponse, StatusMessageResponse } from "../types";
+import { Tspec } from "tspec";
 
 const AuthRouter = express.Router();
 
 // Auth0 Authentication + Authorization Flow part 1 – '/authorize' endpoint
 // Redirect to Auth0 login page to authenticate the user in the browser
-export const authLoginHandler = async (req: Request, res: Response) => {
+export const authLoginHandler = async (req: Request, res: Response<RequestRedirect>) => {
   const { AUTH0_CLIENT_ID, AUTH0_ISSUER_BASE_URL, AUTH0_AUDIENCE, SERVER_URL } = process.env;
   // Construct the URL with all the URL encoded auth parameters
   const urlencoded = new URLSearchParams();
@@ -123,8 +125,6 @@ export const unauthorizedErrorMiddleware = (
       }
       return next();
     }
-    console.log("err generic", err);
-    // Generic unauthorized error message
     res.status(err.statusCode || 401).send({
       status: "error",
       message: "Unauthorized: please provide a valid token to access this resource."
@@ -132,5 +132,31 @@ export const unauthorizedErrorMiddleware = (
   }
   return next();
 };
+
+export type AuthApiSpec = Tspec.DefineApiSpec<{
+  tags: ["Auth"];
+  paths: {
+    "/auth/login": {
+      get: {
+        summary: "Login";
+        description: "Redirect to the Auth0 login page to authenticate the user.";
+        responses: {
+          302: "follow";
+        };
+      };
+    };
+    "/auth/callback": {
+      get: {
+        summary: "Callback";
+        description: "Automatic redirect from /auth/login – fetches the access token using the authentication code from the login page.";
+        responses: {
+          200: ExpressViewResponse;
+          400: StatusMessageResponse;
+          500: StatusMessageResponse;
+        };
+      };
+    };
+  };
+}>;
 
 export default AuthRouter;

@@ -1,0 +1,289 @@
+{
+  "info": {
+    "title": "Status API",
+    "version": "0.1.0",
+    "description": "API documentation for the Quartz Status API.\nThe OpenAPI Spec can be found at [/openapi.json](http://localhost:4000/openapi.json)."
+  },
+  "openapi": "3.0.3",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "GeneralApiSpec_get_/",
+        "tags": [
+          "General"
+        ],
+        "summary": "Root path",
+        "description": "This is the root path of the Quartz Status API.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusMessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "GeneralApiSpec_get_/health",
+        "tags": [
+          "General"
+        ],
+        "summary": "Health check",
+        "description": "Check the health of the Quartz Status API.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusMessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin": {
+      "get": {
+        "operationId": "GeneralApiSpec_get_/admin",
+        "tags": [
+          "General"
+        ],
+        "summary": "Admin example",
+        "description": "This is an example of an admin API endpoint, which requires the read:admin scope.",
+        "security": [
+          {
+            "jwt": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusMessageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusMessageResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusMessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "get": {
+        "operationId": "AuthApiSpec_get_/auth/login",
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login",
+        "description": "Redirect to the Auth0 login page to authenticate the user.",
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "follow"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/callback": {
+      "get": {
+        "operationId": "AuthApiSpec_get_/auth/callback",
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Callback",
+        "description": "Automatic redirect from /auth/login – fetches the access token using the authentication code from the login page.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpressViewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusMessageResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusMessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/regions/GB/apis/national/status": {
+      "get": {
+        "operationId": "UkNationalApiSpec_get_/regions/GB/apis/national/status",
+        "tags": [
+          "UK National"
+        ],
+        "summary": "UK National Solar API status",
+        "description": "Check the status of the UK National Solar API.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusMessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/regions/GB/apis/national/recent-forecast": {
+      "get": {
+        "operationId": "UkNationalApiSpec_get_/regions/GB/apis/national/recent-forecast",
+        "tags": [
+          "UK National"
+        ],
+        "summary": "UK National Solar API recent forecast",
+        "description": "Check the time of the most recent forecast run.",
+        "parameters": [
+          {
+            "name": "time-window",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusMessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/regions/GB/apis/sites/status": {
+      "get": {
+        "operationId": "UkSitesApiSpec_get_/regions/GB/apis/sites/status",
+        "tags": [
+          "UK Sites"
+        ],
+        "summary": "UK PV Sites API status",
+        "description": "Check the status of the UK PV Sites API.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusMessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "StatusMessageResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "message",
+          "status"
+        ]
+      },
+      "ExpressViewResponse": {
+        "type": "object",
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "jwt": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

@@ -3,11 +3,14 @@
  * This module exports an Express router instance, which can be mounted
  * in the main API router.
  */
-import express from "express";
+import express, { Response } from "express";
+import { RouteResponse, StatusMessageResponse } from "../../../types";
+import { Tspec } from "tspec";
+import { GBAPIPaths } from "./paths";
 
 const UkSitesRouter = express.Router();
 
-UkSitesRouter.get("/status", async (req, res) => {
+UkSitesRouter.get("/status", async (req, res: Response<StatusMessageResponse>) => {
   // Get the API URL from the environment and check if it is set
   const sitesApiUrl = process.env.UK_PV_SITE_API_URL;
   console.log("sitesApiUrl", sitesApiUrl);
@@ -45,5 +48,18 @@ UkSitesRouter.get("/status", async (req, res) => {
     });
   }
 });
+
+export type UkSitesApiSpec = Tspec.DefineApiSpec<{
+  tags: ["UK Sites"];
+  paths: {
+    [GBAPIPaths.GBSitesStatusPath]: {
+      get: {
+        summary: "UK PV Sites API status";
+        description: "Check the status of the UK PV Sites API.";
+        responses: RouteResponse<StatusMessageResponse>;
+      };
+    };
+  };
+}>;
 
 export default UkSitesRouter;

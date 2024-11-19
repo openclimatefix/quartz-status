@@ -1,34 +1,70 @@
 # Exported from Render on 2024-10-31T12:22:14Z
 services:
 - type: web
-  name: quartz-status
+  name: quartz-status-dev
   runtime: node
-  repo: https://github.com/openclimatefix/quartz-status
+  branch: development
   plan: starter
   envVars:
-  - key: SERVER_URL
-    sync: false
-  - key: AUTH0_AUDIENCE
-    sync: false
-  - key: AUTH0_CLIENT_SECRET
-    sync: false
-  - key: AUTH0_CLIENT_ID
-    sync: false
-  - key: AUTH0_ISSUER_BASE_URL
-    sync: false
-  - key: AUTH0_DOMAIN
-    sync: false
-  - key: UK_PV_SITE_API_URL
-    sync: false
-  - key: UK_PV_NATIONAL_API_URL
-    sync: false
+  - fromGroup: development
   region: oregon
   buildCommand: yarn --frozen-lockfile install
   startCommand: yarn start
   healthCheckPath: /health
   domains:
   - status-dev.quartz.energy
-  - status.quartz.energy
   previews:
     generation: manual
-version: "1"
+
+- type: web
+  name: quartz-status-prod
+  runtime: node
+  plan: starter
+  envVars:
+    - fromGroup: production
+  region: oregon
+  buildCommand: yarn --frozen-lockfile install
+  startCommand: yarn start
+  healthCheckPath: /health
+  domains:
+    - status.quartz.energy
+  previews:
+    generation: manual
+
+envVarGroups:
+  - name: development
+    envVars:
+      - key: SERVER_URL
+        sync: false
+      - key: AUTH0_AUDIENCE
+        sync: false
+      - key: AUTH0_CLIENT_SECRET
+        sync: false
+      - key: AUTH0_CLIENT_ID
+        sync: false
+      - key: AUTH0_ISSUER_BASE_URL
+        sync: false
+      - key: AUTH0_DOMAIN
+        sync: false
+      - key: UK_PV_SITE_API_URL
+        sync: false
+      - key: UK_PV_NATIONAL_API_URL
+        sync: false
+  - name: production
+    envVars:
+      - key: SERVER_URL
+        sync: false
+      - key: AUTH0_AUDIENCE
+        sync: false
+      - key: AUTH0_CLIENT_SECRET
+        sync: false
+      - key: AUTH0_CLIENT_ID
+        sync: false
+      - key: AUTH0_ISSUER_BASE_URL
+        sync: false
+      - key: AUTH0_DOMAIN
+        sync: false
+      - key: UK_PV_SITE_API_URL
+        sync: false
+      - key: UK_PV_NATIONAL_API_URL
+        sync: false

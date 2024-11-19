@@ -3,11 +3,14 @@
  * This module exports an Express router instance, which can be mounted
  * in the main API router.
  */
-import express from "express";
+import express, { Response } from "express";
+import { RouteResponse, StatusMessageResponse } from "../../../types";
+import { Tspec } from "tspec";
+import { GBAPIPaths } from "./paths";
 
 const UkNationalRouter = express.Router();
 
-UkNationalRouter.get("/status", async (req, res) => {
+UkNationalRouter.get("/status", async (req, res: Response<StatusMessageResponse>) => {
   // Get the API URL from the environment and check if it is set
   const nationalApiUrl = process.env.UK_PV_NATIONAL_API_URL;
   if (!nationalApiUrl) {
@@ -45,7 +48,7 @@ UkNationalRouter.get("/status", async (req, res) => {
   }
 });
 
-UkNationalRouter.get("/recent-forecast", async (req, res) => {
+UkNationalRouter.get("/recent-forecast", async (req, res: Response<StatusMessageResponse>) => {
   // Get the API URL from the environment and check if it is set
   const nationalApiUrl = process.env.UK_PV_NATIONAL_API_URL;
   if (!nationalApiUrl) {
@@ -126,5 +129,28 @@ UkNationalRouter.get("/recent-forecast", async (req, res) => {
     });
   }
 });
+
+export type UkNationalApiSpec = Tspec.DefineApiSpec<{
+  tags: ["UK National"];
+  paths: {
+    [GBAPIPaths.GBNationalStatusPath]: {
+      get: {
+        summary: "UK National Solar API status";
+        description: "Check the status of the UK National Solar API.";
+        responses: RouteResponse<StatusMessageResponse>;
+      };
+    };
+    [GBAPIPaths.GBNationalRecentForecastPath]: {
+      get: {
+        summary: "UK National Solar API recent forecast";
+        description: "Check the time of the most recent forecast run.";
+        query: {
+          "time-window"?: string;
+        };
+        responses: RouteResponse<StatusMessageResponse>;
+      };
+    };
+  };
+}>;
 
 export default UkNationalRouter;
