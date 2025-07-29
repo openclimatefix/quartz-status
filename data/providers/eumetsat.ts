@@ -8,16 +8,13 @@ export async function checkEUMETSAT(): Promise<ProviderStatusResponse> {
   const page = await browser.newPage();
 
   try {
-    console.log(`Loading to ${url}`);
     await page.goto(url, { waitUntil: "networkidle" });
 
-    console.log(`DOM content loaded, waiting for the seviri_rss_hr.json table...`);
     await page
       .locator("[id^='dataTable_seviri_rss_hr.json']")
       .first()
       .waitFor({ timeout: 5000, state: "attached" });
 
-    console.log(`Table found and contains data, extracting statuses...`);
     const statusData = await page.evaluate(() => {
       const rows = Array.from(
         document.querySelectorAll(`[id^='dataTable_seviri_rss_hr.json'] tbody tr`)
