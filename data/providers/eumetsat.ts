@@ -129,10 +129,8 @@ export async function checkEUMETSAT(): Promise<ProviderStatusResponse> {
       return result;
     });
 
-    await browser.close();
     return statusData;
   } catch (err: Error | any) {
-    await browser.close();
     return {
       provider: "EUMETSAT",
       source: "9.5°E RSS MSG SEVIRI Level 1.5 Image Data [MET 11]",
@@ -140,5 +138,9 @@ export async function checkEUMETSAT(): Promise<ProviderStatusResponse> {
       statusMessage: "Error",
       error: err.message
     };
+  } finally {
+    if (browser && browser.isConnected()) {
+      await browser.close();
+    }
   }
 }
