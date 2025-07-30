@@ -58,6 +58,12 @@ export const initServer = async () => {
   // serve the openapi spec and swagger UI
   app.use(
     "/docs",
+    /**
+     * Note: unsure why TypeScript is having issues with the `swaggerUi.serve` type,
+     * but this is what the docs say to do!
+     */
+    // eslint-disable-next-line
+    // @ts-expect-error
     swaggerUi.serve,
     swaggerUi.setup(openApiSpec, {
       swaggerUrl: "/openapi.json",
