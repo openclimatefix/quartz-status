@@ -8,7 +8,7 @@ services:
   envVars:
   - fromGroup: development
   region: oregon
-  buildCommand: yarn --frozen-lockfile install
+  buildCommand: yarn --frozen-lockfile install && npx playwright install --with-deps
   startCommand: yarn start
   healthCheckPath: /health
   domains:
