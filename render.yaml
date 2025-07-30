@@ -52,6 +52,8 @@ envVarGroups:
         sync: false
       - key: UK_PV_NATIONAL_API_URL
         sync: false
+      - key: PLAYWRIGHT_BROWSERS_PATH
+        sync: false
   - name: production
     envVars:
       - key: SERVER_URL

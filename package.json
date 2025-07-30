@@ -12,6 +12,7 @@
     "lint": "eslint **/*.ts",
     "format": "eslint **/*.ts --fix",
     "prepare": "husky",
+    "postinstall": "npx playwright install chromium",
     "test": "jest --coverage --forceExit",
     "test:watch": "jest --watch"
   },
