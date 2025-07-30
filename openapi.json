@@ -169,6 +169,57 @@
         }
       }
     },
+    "/data/providers": {
+      "get": {
+        "operationId": "DataApiSpec_get_/data/providers",
+        "tags": [
+          "Data"
+        ],
+        "summary": "Data providers status check",
+        "description": "Check the status of various data providers.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "provider": {
+                        "type": "string"
+                      },
+                      "source": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "$ref": "#/components/schemas/ProviderStatus"
+                      },
+                      "statusMessage": {
+                        "type": "string"
+                      },
+                      "details": {},
+                      "error": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                      "provider",
+                      "source",
+                      "status",
+                      "statusMessage"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/regions/GB/apis/national/status": {
       "get": {
         "operationId": "UkNationalApiSpec_get_/regions/GB/apis/national/status",
@@ -276,6 +327,15 @@
       "ExpressViewResponse": {
         "type": "object",
         "additionalProperties": false
+      },
+      "ProviderStatus": {
+        "enum": [
+          "error",
+          "ok",
+          "unknown",
+          "warning"
+        ],
+        "type": "string"
       }
     },
     "securitySchemes": {
