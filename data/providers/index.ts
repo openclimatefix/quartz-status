@@ -42,4 +42,19 @@ ProviderCheckRouter.get("/", async (req, res) => {
   res.json(results);
 });
 
+ProviderCheckRouter.get("/ecmwf", async (req, res) => {
+  const result: ProviderStatusResponse = await checkECMWF();
+  res.json(result);
+});
+
+ProviderCheckRouter.get("/metoffice", async (req, res) => {
+  const result: ProviderStatusResponse = await checkMetOffice();
+  res.json(result);
+});
+
+ProviderCheckRouter.get("/eumetsat", async (req, res) => {
+  const result: ProviderStatusResponse = await checkEUMETSAT();
+  res.json(result);
+});
+
 export default ProviderCheckRouter;
