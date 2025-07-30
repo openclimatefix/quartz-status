@@ -53,7 +53,8 @@ ProviderCheckRouter.get("/metoffice", async (req, res) => {
 });
 
 ProviderCheckRouter.get("/eumetsat", async (req, res) => {
-  const result: ProviderStatusResponse = await checkEUMETSAT();
+  const { verbose } = req.query;
+  const result: ProviderStatusResponse = await checkEUMETSAT(verbose === "true");
   res.json(result);
 });
 
