@@ -40,7 +40,7 @@ export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResp
       .waitFor({ timeout: 5000, state: "attached" });
 
     const statusData = await page.evaluate(
-      async ([verbose]) => {
+      async ([verbose, url]) => {
         const rows = Array.from(
           document.querySelectorAll(`[id^='dataTable_seviri_rss_hr.json'] tbody tr`)
         );
@@ -57,7 +57,8 @@ export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResp
           provider: "EUMETSAT",
           source: "9.5°E RSS MSG SEVIRI Level 1.5 Image Data [MET 11]",
           status: "unknown",
-          statusMessage: "Unknown"
+          statusMessage: "Unknown",
+          url: url as string
         };
 
         const details: Details = {
@@ -168,16 +169,17 @@ export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResp
         result.details = details;
         return result;
       },
-      [verbose]
+      [verbose, url]
     );
 
-    return statusData;
+    return { ...statusData, url };
   } catch (err: Error | any) {
     return {
       provider: "EUMETSAT",
       source: "9.5°E RSS MSG SEVIRI Level 1.5 Image Data [MET 11]",
       status: "error",
       statusMessage: "Error",
+      url,
       error: err.message
     };
   } finally {

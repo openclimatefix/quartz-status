@@ -50,7 +50,8 @@ export async function checkMetOffice(): Promise<ProviderStatusResponse> {
       provider: "Met Office",
       source: "UK 2 km (Standard)",
       status,
-      statusMessage
+      statusMessage,
+      url
     };
   } catch (err: Error | any) {
     return {
@@ -58,6 +59,7 @@ export async function checkMetOffice(): Promise<ProviderStatusResponse> {
       source: "UK 2 km (Standard)",
       status: "error",
       statusMessage: "Error",
+      url,
       error: err.message
     };
   }

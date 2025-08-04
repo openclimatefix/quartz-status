@@ -200,6 +200,9 @@
                       "statusMessage": {
                         "type": "string"
                       },
+                      "url": {
+                        "type": "string"
+                      },
                       "details": {},
                       "error": {
                         "type": "string"
@@ -210,7 +213,8 @@
                       "provider",
                       "source",
                       "status",
-                      "statusMessage"
+                      "statusMessage",
+                      "url"
                     ]
                   }
                 }

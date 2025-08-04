@@ -13,8 +13,9 @@ type ECMWFStatusResponse = {
 };
 export async function checkECMWF(): Promise<ProviderStatusResponse> {
   // ECMWF DISSEMINATION service status check
+  const url = "https://apps.ecmwf.int/status/status/DISSEMINATION";
   try {
-    const res = await fetch("https://apps.ecmwf.int/status/status/DISSEMINATION");
+    const res = await fetch(url);
     const json = (await res.json()) as ECMWFStatusResponse;
 
     const statusMessage = json.status[0].node.Status || "Unknown";
@@ -31,13 +32,14 @@ export async function checkECMWF(): Promise<ProviderStatusResponse> {
       status = "error";
     }
 
-    return { provider: "ECMWF", source: "UK", status, statusMessage };
+    return { provider: "ECMWF", source: "UK", url, status, statusMessage };
   } catch (err: Error | any) {
     return {
       provider: "ECMWF",
       source: "UK",
       status: "error",
       statusMessage: "Error",
+      url,
       error: err.message
     };
   }

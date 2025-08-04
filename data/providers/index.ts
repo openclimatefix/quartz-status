@@ -13,6 +13,7 @@ export type ProviderStatusResponse = {
   source: string;
   status: ProviderStatus;
   statusMessage: string;
+  url: string;
   details?: any;
   error?: string;
 };
