@@ -4,6 +4,8 @@ import { ProviderStatus, ProviderStatusResponse } from "./index";
 
 export async function checkMetOffice(): Promise<ProviderStatusResponse> {
   const url = "https://datahub.metoffice.gov.uk/support/service-status";
+  const statusPageUrl =
+    "https://datahub.metoffice.gov.uk/support/model-run-status/atmospheric#mo-uk";
   try {
     const res = await fetch(url);
     const html = await res.text();
@@ -51,7 +53,8 @@ export async function checkMetOffice(): Promise<ProviderStatusResponse> {
       source: "UK 2 km (Standard)",
       status,
       statusMessage,
-      url
+      url,
+      statusPageUrl
     };
   } catch (err: Error | any) {
     return {
@@ -60,6 +63,7 @@ export async function checkMetOffice(): Promise<ProviderStatusResponse> {
       status: "error",
       statusMessage: "Error",
       url,
+      statusPageUrl,
       error: err.message
     };
   }

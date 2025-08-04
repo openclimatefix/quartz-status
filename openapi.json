@@ -203,6 +203,9 @@
                       "url": {
                         "type": "string"
                       },
+                      "statusPageUrl": {
+                        "type": "string"
+                      },
                       "details": {},
                       "error": {
                         "type": "string"
@@ -214,6 +217,7 @@
                       "source",
                       "status",
                       "statusMessage",
+                      "statusPageUrl",
                       "url"
                     ]
                   }

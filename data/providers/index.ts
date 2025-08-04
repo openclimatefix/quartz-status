@@ -14,6 +14,7 @@ export type ProviderStatusResponse = {
   status: ProviderStatus;
   statusMessage: string;
   url: string;
+  statusPageUrl: string;
   details?: any;
   error?: string;
 };

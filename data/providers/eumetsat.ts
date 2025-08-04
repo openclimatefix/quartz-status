@@ -26,6 +26,8 @@ const constructDateTime = (dateString: string): string => {
 export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResponse> {
   const epochNowMilliseconds = Date.now();
   const url = `https://masif.eumetsat.int/ossi/level3/seviri_rss_hr.json.html?NOCACHE_TS=${epochNowMilliseconds}`;
+  const statusPageUrl =
+    "https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename=seviri_rss_hr.json.html&ossi_level2_filename=seviri_rss.html";
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
 
@@ -40,7 +42,7 @@ export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResp
       .waitFor({ timeout: 5000, state: "attached" });
 
     const statusData = await page.evaluate(
-      async ([verbose, url]) => {
+      async ([verbose, url, statusPageUrl]) => {
         const rows = Array.from(
           document.querySelectorAll(`[id^='dataTable_seviri_rss_hr.json'] tbody tr`)
         );
@@ -58,7 +60,8 @@ export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResp
           source: "9.5°E RSS MSG SEVIRI Level 1.5 Image Data [MET 11]",
           status: "unknown",
           statusMessage: "Unknown",
-          url: url as string
+          url: url as string,
+          statusPageUrl: statusPageUrl as string
         };
 
         const details: Details = {
@@ -169,10 +172,10 @@ export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResp
         result.details = details;
         return result;
       },
-      [verbose, url]
+      [verbose, url, statusPageUrl]
     );
 
-    return { ...statusData, url };
+    return { ...statusData, url, statusPageUrl };
   } catch (err: Error | any) {
     return {
       provider: "EUMETSAT",
@@ -180,6 +183,7 @@ export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResp
       status: "error",
       statusMessage: "Error",
       url,
+      statusPageUrl,
       error: err.message
     };
   } finally {
