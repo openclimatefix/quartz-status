@@ -24,7 +24,10 @@ export async function checkECMWF(): Promise<ProviderStatusResponse> {
     if (statusMessage.toLowerCase().includes("ok")) {
       status = "ok";
       // TODO: Need to check what these status messages actually are other than "ok"
-    } else if (statusMessage.toLowerCase().includes("warning")) {
+    } else if (
+      statusMessage.toLowerCase().includes("warning") ||
+      statusMessage.toLowerCase().includes("down")
+    ) {
       status = "warning";
     } else if (
       statusMessage.toLowerCase().includes("error") ||
