@@ -1,6 +1,6 @@
 {
   "name": "status-api",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Open Climate Fix Status API",
   "main": "app.ts",
   "author": "braddf",
@@ -8,24 +8,30 @@
   "private": false,
   "scripts": {
     "dev": "tsx watch server.ts",
-    "start": "ts-node server.ts",
+    "start": "npx tsx server.ts",
     "lint": "eslint **/*.ts",
     "format": "eslint **/*.ts --fix",
     "prepare": "husky",
+    "postinstall": "npx playwright install chromium",
     "test": "jest --coverage --forceExit",
     "test:watch": "jest --watch"
   },
   "dependencies": {
     "@types/jest": "^29.5.13",
+    "@types/luxon": "^3.7.1",
     "@types/supertest": "^6.0.2",
     "@types/swagger-ui-express": "^4.1.7",
+    "cheerio": "^1.1.2",
     "dotenv": "^16.3.1",
     "ejs": "^3.1.10",
     "express": "^4.18.2",
-    "express-oauth2-jwt-bearer": "^1.6.0",
+    "express-oauth2-jwt-bearer": "^1.6.1",
     "express-ws": "^5.0.2",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.1.0",
+    "luxon": "^3.7.1",
+    "node-fetch": "^3.3.2",
+    "playwright": "^1.54.1",
     "swagger-ui-express": "^5.0.1",
     "ts-node": "^10.9.2",
     "tspec": "^0.1.116"
@@ -49,7 +55,7 @@
     "typescript": "^5.3.3"
   },
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "prettier": {
     "trailingComma": "none",

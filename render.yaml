@@ -8,7 +8,9 @@ services:
   envVars:
   - fromGroup: development
   region: oregon
-  buildCommand: yarn --frozen-lockfile install
+  buildCommand: |
+    yarn --frozen-lockfile install
+    npx playwright install chromium
   startCommand: yarn start
   healthCheckPath: /health
   domains:
@@ -49,6 +51,8 @@ envVarGroups:
       - key: UK_PV_SITE_API_URL
         sync: false
       - key: UK_PV_NATIONAL_API_URL
+        sync: false
+      - key: PLAYWRIGHT_BROWSERS_PATH
         sync: false
   - name: production
     envVars:

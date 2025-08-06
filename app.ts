@@ -7,6 +7,7 @@ import { generateTspec, Tspec } from "tspec";
 import { AuthenticatedRouteResponses, RouteResponse, StatusMessageResponse } from "./types";
 import packageJson from "./package.json";
 import swaggerUi from "swagger-ui-express";
+import ProviderCheckRouter from "./data/providers";
 
 dotenv.config();
 
@@ -57,6 +58,12 @@ export const initServer = async () => {
   // serve the openapi spec and swagger UI
   app.use(
     "/docs",
+    /**
+     * Note: unsure why TypeScript is having issues with the `swaggerUi.serve` type,
+     * but this is what the docs say to do!
+     */
+    // eslint-disable-next-line
+    // @ts-expect-error
     swaggerUi.serve,
     swaggerUi.setup(openApiSpec, {
       swaggerUrl: "/openapi.json",
@@ -161,12 +168,15 @@ export type GeneralApiSpec = Tspec.DefineApiSpec<{
 }>;
 
 /**
- * Mount the components router on the `/components` path
- * This will allow us to define routes for the various components
- * in separate files, and mount them all under the `/components` path
- * in the app.
+ * Set up an Express router for the various regions and their APIs.
  */
 app.use("/regions", RegionsRouter);
+
+/**
+ * Set up an Express router for the provider checks.
+ * This router handles the status checks for various data providers.
+ */
+app.use("/data/providers", ProviderCheckRouter);
 
 /**
  * As above for Auth routes, e.g. login, callback
