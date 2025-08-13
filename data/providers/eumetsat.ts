@@ -153,7 +153,10 @@ export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResp
           result.statusMessage = "OK: All data is available and on time";
         } else if (details.undeliveredUnplanned > 0) {
           result.status = "warning";
-          result.statusMessage = "Warning: Some data is unavailable";
+          result.statusMessage = "Warning: Some data is unavailable due to unplanned issues";
+        } else if (details.undeliveredPlanned > 0) {
+          result.status = "warning";
+          result.statusMessage = "Warning: Some data is unavailable due to planned maintenance";
         } else if (details.incomplete > 0) {
           result.status = "warning";
           result.statusMessage = "Warning: Some data is incomplete";
