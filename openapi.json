@@ -1,7 +1,7 @@
 {
   "info": {
     "title": "Status API",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "API documentation for the Quartz Status API.\nThe OpenAPI Spec can be found at [/openapi.json](http://localhost:4000/openapi.json)."
   },
   "openapi": "3.0.3",

@@ -22,34 +22,61 @@ const constructDateTime = (dateString: string): string => {
   const dateTime = DateTime.fromFormat(dateString, "yyyy/MM/dd HH:mm:ss", { zone: "UTC" });
   return dateTime.isValid ? dateTime.toISO()?.slice(0, 16) : "Invalid Date";
 };
-
-export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResponse> {
+export type MetSatId = "MET-11" | "MET-10";
+export async function checkEUMETSAT(
+  satelliteId: MetSatId,
+  verbose = false
+): Promise<ProviderStatusResponse> {
   const epochNowMilliseconds = Date.now();
-  const url = `https://masif.eumetsat.int/ossi/level3/seviri_rss_hr.json.html?NOCACHE_TS=${epochNowMilliseconds}`;
-  const statusPageUrl =
-    "https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename=seviri_rss_hr.json.html&ossi_level2_filename=seviri_rss.html";
+  const getStatusPageUrls = (satelliteId: MetSatId) => {
+    switch (satelliteId) {
+      case "MET-11":
+        return [
+          "https://masif.eumetsat.int/ossi/webpages/level3.html??ossi_level3_filename=seviri_0deg_hr.json.html&ossi_level2_filename=seviri_0deg.html",
+          `https://masif.eumetsat.int/ossi/level3/seviri_rss_hr.json.html?NOCACHE_TS=${epochNowMilliseconds}`
+        ];
+      case "MET-10":
+        return [
+          "https://masif.eumetsat.int/ossi/webpages/level3.html??ossi_level3_filename=seviri_rss_hr.json.html&ossi_level2_filename=seviri_rss.html",
+          `https://masif.eumetsat.int/ossi/level3/seviri_0deg_hr.json.html?NOCACHE_TS=${epochNowMilliseconds}`
+        ];
+      default:
+        throw new Error("Invalid satellite ID");
+    }
+  };
+  const [statusPageUrl, jsonUrl] = getStatusPageUrls(satelliteId);
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
+
+  const constructServiceName = (satelliteId: MetSatId) => {
+    switch (satelliteId) {
+      case "MET-11":
+        return "9.5°E RSS MSG SEVIRI Level 1.5 Image Data [MET 11]";
+      case "MET-10":
+        return "0°E FES MSG SEVIRI Level 1.5 Image Data [MET 10]";
+      default:
+        throw new Error("Invalid satellite ID");
+    }
+  };
+  const serviceName = constructServiceName(satelliteId as MetSatId);
 
   try {
     await page.exposeFunction("constructDateTime", constructDateTime);
 
-    await page.goto(url, { waitUntil: "networkidle" });
+    await page.goto(jsonUrl, { waitUntil: "networkidle" });
 
     await page
-      .locator("[id^='dataTable_seviri_rss_hr.json']")
+      .locator("[id^='dataTable_seviri_']")
       .first()
       .waitFor({ timeout: 5000, state: "attached" });
 
     const statusData = await page.evaluate(
-      async ([verbose, url, statusPageUrl]) => {
-        const rows = Array.from(
-          document.querySelectorAll(`[id^='dataTable_seviri_rss_hr.json'] tbody tr`)
-        );
+      async ([verbose, url, statusPageUrl, serviceName]) => {
+        const rows = Array.from(document.querySelectorAll(`[id^='dataTable_seviri_'] tbody tr`));
         if (rows.length === 0) {
           return {
             provider: "EUMETSAT",
-            source: "9.5°E RSS MSG SEVIRI Level 1.5 Image Data [MET 11]",
+            source: serviceName as string,
             status: "unknown",
             statusMessage: "No Data Found"
           } as ProviderStatusResponse;
@@ -57,7 +84,7 @@ export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResp
 
         const result: ProviderStatusResponse = {
           provider: "EUMETSAT",
-          source: "9.5°E RSS MSG SEVIRI Level 1.5 Image Data [MET 11]",
+          source: serviceName as string,
           status: "unknown",
           statusMessage: "Unknown",
           url: url as string,
@@ -175,17 +202,17 @@ export async function checkEUMETSAT(verbose = false): Promise<ProviderStatusResp
         result.details = details;
         return result;
       },
-      [verbose, url, statusPageUrl]
+      [verbose, jsonUrl, statusPageUrl, serviceName]
     );
 
-    return { ...statusData, url, statusPageUrl };
+    return { ...statusData, url: jsonUrl, statusPageUrl };
   } catch (err: Error | any) {
     return {
       provider: "EUMETSAT",
-      source: "9.5°E RSS MSG SEVIRI Level 1.5 Image Data [MET 11]",
+      source: serviceName,
       status: "error",
       statusMessage: "Error",
-      url,
+      url: jsonUrl,
       statusPageUrl,
       error: err.message
     };
