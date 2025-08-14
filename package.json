@@ -1,6 +1,6 @@
 {
   "name": "status-api",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Open Climate Fix Status API",
   "main": "app.ts",
   "author": "braddf",
