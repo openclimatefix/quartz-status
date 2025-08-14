@@ -57,11 +57,23 @@ ProviderCheckRouter.get("/metoffice", async (req, res) => {
 
 ProviderCheckRouter.get("/eumetsat", async (req, res) => {
   const { verbose, satelliteId } = req.query as { verbose?: string; satelliteId?: MetSatId };
-  const result: ProviderStatusResponse = await checkEUMETSAT(
-    satelliteId || "MET-11",
-    verbose === "true"
-  );
-  res.json(result);
+  try {
+    const result: ProviderStatusResponse = await checkEUMETSAT(
+      satelliteId || "MET-11",
+      verbose === "true"
+    );
+    res.json(result);
+  } catch (error: any) {
+    return res.status(500).json({
+      provider: "EUMETSAT",
+      source: satelliteId || "MET-11",
+      status: "error",
+      statusMessage: "Error checking EUMETSAT status",
+      url: "",
+      statusPageUrl: "",
+      error: error.message
+    });
+  }
 });
 
 export default ProviderCheckRouter;
