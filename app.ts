@@ -8,6 +8,7 @@ import { AuthenticatedRouteResponses, RouteResponse, StatusMessageResponse } fro
 import packageJson from "./package.json";
 import swaggerUi from "swagger-ui-express";
 import ProviderCheckRouter from "./data/providers";
+import { initWebsockets } from "./websockets/users";
 
 dotenv.config();
 
@@ -133,7 +134,13 @@ export const adminHandler = (req: Request, res: Response<StatusMessageResponse>)
     message: "Admin API is working and authorized behind the read:admin scope."
   });
 };
+
 app.get("/admin", checkJwt, checkScopes, adminHandler);
+
+// // Admin-only presence summary for the PoC
+// app.get("/admin/presence", checkJwt, checkScopes, (req: Request, res: Response) => {
+//   res.json(getPresenceSummary());
+// });
 
 /**
  * Export the API spec for use in the docs
@@ -164,6 +171,15 @@ export type GeneralApiSpec = Tspec.DefineApiSpec<{
         security: "jwt";
       };
     };
+    // "/admin/presence": {
+    //   security: "jwt";
+    //   get: {
+    //     summary: "Admin presence summary";
+    //     description: "Returns a coarse, in-memory summary of active WebSocket sessions (PoC).";
+    //     responses: AuthenticatedRouteResponses<any>;
+    //     security: "jwt";
+    //   };
+    // };
   };
 }>;
 
@@ -184,17 +200,7 @@ app.use("/data/providers", ProviderCheckRouter);
 app.use("/auth", AuthRouter);
 
 // WebSockets
-// const expressWs: Instance = express_ws(app);
-// expressWs.app.ws("/ws", function (ws) {
-//   ws.on("message", function (msg) {
-//     console.log(msg);
-//   });
-//   ws.on("connection", function (connection) {
-//     console.log("Connected");
-//     console.log(connection);
-//   });
-// console.log('socket', req.testing);
-// });
+initWebsockets(app);
 
 // Favicon
 app.use("/favicon.ico", express.static("./favicon.ico"));
