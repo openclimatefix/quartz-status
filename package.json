@@ -55,7 +55,7 @@
     "typescript": "^5.3.3"
   },
   "engines": {
-    "node": "22.x"
+    "node": "^22.x || ^23.x"
   },
   "prettier": {
     "trailingComma": "none",
