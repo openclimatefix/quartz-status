@@ -18,15 +18,79 @@ type PresenceMeta = {
   aggregation?: string;
   visibleLines?: string[];
   nHourForecast?: number;
+  showNHourView?: boolean;
+  selectedTime?: string;
+  selectedRegionIds?: string[];
+  dashboardMode?: boolean;
 };
 
 const PRESENCE_TTL_MS = 60_000; // consider a session active if we saw it in the last 60s
 const presenceById = new Map<string, PresenceMeta>();
 
+// --- Session history (in-memory, resets on deploy) ---
+type SessionRecord = {
+  sessionId: string;
+  email: string;
+  connectedAt: number;
+  disconnectedAt: number;
+  durationMs: number;
+  view?: string;
+  aggregation?: string;
+  nHourForecast?: number;
+  showNHourView?: boolean;
+  visibleLines?: string[];
+  selectedTime?: string;
+  selectedRegionIds?: string[];
+  dashboardMode?: boolean;
+};
+
+const MAX_SESSIONS_PER_USER = 50;
+const sessionsByUser = new Map<string, SessionRecord[]>();
+
+const recordSession = (sessionId: string, meta: PresenceMeta) => {
+  const email = meta.email ?? "unknown";
+  const now = Date.now();
+  const record: SessionRecord = {
+    sessionId,
+    email,
+    connectedAt: meta.connectedAt,
+    disconnectedAt: now,
+    durationMs: now - meta.connectedAt,
+    view: meta.view,
+    aggregation: meta.aggregation,
+    nHourForecast: meta.nHourForecast,
+    showNHourView: meta.showNHourView,
+    visibleLines: meta.visibleLines,
+    selectedTime: meta.selectedTime,
+    selectedRegionIds: meta.selectedRegionIds,
+    dashboardMode: meta.dashboardMode
+  };
+
+  const existing = sessionsByUser.get(email) ?? [];
+  existing.push(record);
+  // Keep only the most recent sessions per user
+  if (existing.length > MAX_SESSIONS_PER_USER) {
+    existing.splice(0, existing.length - MAX_SESSIONS_PER_USER);
+  }
+  sessionsByUser.set(email, existing);
+};
+
+const endSession = (id: string) => {
+  const meta = presenceById.get(id);
+  if (meta) {
+    recordSession(id, meta);
+    presenceById.delete(id);
+  }
+};
+// --- End session history ---
+
 const prunePresence = () => {
   const now = Date.now();
   for (const [id, meta] of presenceById.entries()) {
-    if (now - meta.lastSeenAt > PRESENCE_TTL_MS) presenceById.delete(id);
+    if (now - meta.lastSeenAt > PRESENCE_TTL_MS) {
+      recordSession(id, meta);
+      presenceById.delete(id);
+    }
   }
 };
 
@@ -60,10 +124,29 @@ const getPresenceSummary = () => {
     view: meta.view ?? null,
     aggregation: meta.aggregation ?? null,
     nHourForecast: meta.nHourForecast ?? null,
+    showNHourView: meta.showNHourView ?? false,
     visibleLines: meta.visibleLines ?? [],
+    selectedTime: meta.selectedTime ?? null,
+    selectedRegionIds: meta.selectedRegionIds ?? [],
+    dashboardMode: meta.dashboardMode ?? false,
     connectedAt: meta.connectedAt,
     lastSeenAt: meta.lastSeenAt
   }));
+
+  // Build recent users from session history (exclude currently active users)
+  const activeEmails = new Set(Array.from(presenceById.values()).map((m) => m.email ?? "unknown"));
+  const recentUsers = Array.from(sessionsByUser.entries())
+    .filter(([email]) => !activeEmails.has(email))
+    .map(([email, sessions]) => {
+      const lastSession = sessions[sessions.length - 1];
+      return {
+        email,
+        totalSessions: sessions.length,
+        lastSession,
+        sessions
+      };
+    })
+    .sort((a, b) => b.lastSession.disconnectedAt - a.lastSession.disconnectedAt);
 
   return {
     asOf: now,
@@ -73,7 +156,8 @@ const getPresenceSummary = () => {
     byAggregation,
     byNHourForecast,
     byVisibleLine,
-    users
+    users,
+    recentUsers
   };
 };
 
@@ -198,7 +282,14 @@ const initWebsockets = (app: Express) => {
           if (typeof payload.view === "string") meta.view = payload.view;
           if (typeof payload.aggregation === "string") meta.aggregation = payload.aggregation;
           if (typeof payload.nHourForecast === "number") meta.nHourForecast = payload.nHourForecast;
+          if (typeof payload.showNHourView === "boolean")
+            meta.showNHourView = payload.showNHourView;
           if (Array.isArray(payload.visibleLines)) meta.visibleLines = payload.visibleLines;
+          if (typeof payload.selectedTime === "string") meta.selectedTime = payload.selectedTime;
+          if (Array.isArray(payload.selectedRegionIds))
+            meta.selectedRegionIds = payload.selectedRegionIds;
+          if (typeof payload.dashboardMode === "boolean")
+            meta.dashboardMode = payload.dashboardMode;
         }
 
         presenceById.set(id, meta);
@@ -213,11 +304,11 @@ const initWebsockets = (app: Express) => {
     });
 
     ws.on("close", function () {
-      presenceById.delete(id);
+      endSession(id);
     });
 
     ws.on("error", function () {
-      presenceById.delete(id);
+      endSession(id);
     });
   });
 
