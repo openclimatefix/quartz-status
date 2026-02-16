@@ -16,6 +16,13 @@ export const authLoginHandler = async (req: Request, res: Response<RequestRedire
   urlencoded.append("client_id", `${AUTH0_CLIENT_ID}`);
   urlencoded.append("redirect_uri", `${SERVER_URL}/auth/callback`);
   urlencoded.append("audience", `${AUTH0_AUDIENCE}`);
+
+  // If a redirect destination was provided, pass it through Auth0's state param
+  const redirect = req.query.redirect;
+  if (typeof redirect === "string" && redirect.startsWith("/")) {
+    urlencoded.append("state", redirect);
+  }
+
   const url = `${AUTH0_ISSUER_BASE_URL}/authorize?${urlencoded.toString()}`;
   // Redirect the user to the Auth0 login page, where they can log in and authorize the app
   // to access their profile and other information, then they will be redirected back to the
@@ -86,7 +93,14 @@ AuthRouter.get("/callback", async (req: Request, res: Response) => {
     }
     data.email = parsedTokenObject.email;
 
-    // Render a simple page with the user's access token
+    // If a redirect was passed via state, send the user back with token in the hash fragment
+    const redirect = req.query.state;
+    if (typeof redirect === "string" && redirect.startsWith("/")) {
+      res.redirect(`${redirect}#token=${encodeURIComponent(data.access_token)}`);
+      return;
+    }
+
+    // Otherwise render the token page as before
     res.render("token", { token: data.access_token, email: data.email });
   } catch (error) {
     console.error("Error getting access token", error);

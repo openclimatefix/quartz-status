@@ -13,10 +13,11 @@ type PresenceMeta = {
   email?: string;
   ip?: string;
   userAgent?: string;
-  // Optional client-provided fields (keep coarse / non-sensitive):
-  orgId?: string;
-  view?: "map" | "chart" | string;
-  horizonBucket?: string; // e.g. "0-3", "3-12", "12-36"
+  // Client-provided fields:
+  view?: string;
+  aggregation?: string;
+  visibleLines?: string[];
+  nHourForecast?: number;
 };
 
 const PRESENCE_TTL_MS = 60_000; // consider a session active if we saw it in the last 60s
@@ -33,27 +34,46 @@ const getPresenceSummary = () => {
   prunePresence();
   const now = Date.now();
   const totalActive = presenceById.size;
-  const byOrg: Record<string, number> = {};
   const byView: Record<string, number> = {};
-  const byHorizonBucket: Record<string, number> = {};
+  const byAggregation: Record<string, number> = {};
+  const byNHourForecast: Record<string, number> = {};
+  const byVisibleLine: Record<string, number> = {};
 
   for (const meta of presenceById.values()) {
-    if (meta.orgId) byOrg[meta.orgId] = (byOrg[meta.orgId] ?? 0) + 1;
     if (meta.view) byView[meta.view] = (byView[meta.view] ?? 0) + 1;
-    if (meta.horizonBucket)
-      byHorizonBucket[meta.horizonBucket] = (byHorizonBucket[meta.horizonBucket] ?? 0) + 1;
+    if (meta.aggregation)
+      byAggregation[meta.aggregation] = (byAggregation[meta.aggregation] ?? 0) + 1;
+    if (meta.nHourForecast != null) {
+      const key = `${meta.nHourForecast}h`;
+      byNHourForecast[key] = (byNHourForecast[key] ?? 0) + 1;
+    }
+    if (meta.visibleLines) {
+      for (const line of meta.visibleLines) {
+        byVisibleLine[line] = (byVisibleLine[line] ?? 0) + 1;
+      }
+    }
   }
+
+  const users = Array.from(presenceById.entries()).map(([id, meta]) => ({
+    id,
+    email: meta.email ?? "unknown",
+    view: meta.view ?? null,
+    aggregation: meta.aggregation ?? null,
+    nHourForecast: meta.nHourForecast ?? null,
+    visibleLines: meta.visibleLines ?? [],
+    connectedAt: meta.connectedAt,
+    lastSeenAt: meta.lastSeenAt
+  }));
 
   return {
     asOf: now,
     ttlMs: PRESENCE_TTL_MS,
     totalActive,
-    byOrg,
     byView,
-    emails: Array.from(presenceById.values())
-      .map((m) => m.email ?? "unknown")
-      .filter(Boolean),
-    byHorizonBucket
+    byAggregation,
+    byNHourForecast,
+    byVisibleLine,
+    users
   };
 };
 
@@ -164,7 +184,7 @@ const initWebsockets = (app: Express) => {
       try {
         // Expected payload examples:
         // {"type":"heartbeat"}
-        // {"type":"presence","orgId":"org_123","view":"map","horizonBucket":"0-3"}
+        // {"type":"presence","email":"user@example.com","view":"FORECAST","aggregation":"GSP","nHourForecast":4,"visibleLines":["GENERATION","FORECAST"]}
         const payload = typeof msg === "string" ? JSON.parse(msg) : JSON.parse(msg.toString());
 
         const meta = presenceById.get(id);
@@ -173,11 +193,12 @@ const initWebsockets = (app: Express) => {
         meta.lastSeenAt = Date.now();
 
         if (payload?.type === "presence") {
-          // Keep this minimal and coarse. Do NOT send PII.
-          if (typeof payload.orgId === "string") meta.orgId = payload.orgId;
-          if (typeof payload.view === "string") meta.view = payload.view;
-          if (typeof payload.horizonBucket === "string") meta.horizonBucket = payload.horizonBucket;
+          if (typeof payload.email === "string") meta.email = payload.email;
           if (typeof payload.userHash === "string") meta.email = payload.userHash;
+          if (typeof payload.view === "string") meta.view = payload.view;
+          if (typeof payload.aggregation === "string") meta.aggregation = payload.aggregation;
+          if (typeof payload.nHourForecast === "number") meta.nHourForecast = payload.nHourForecast;
+          if (Array.isArray(payload.visibleLines)) meta.visibleLines = payload.visibleLines;
         }
 
         presenceById.set(id, meta);
@@ -268,18 +289,21 @@ const initWebsockets = (app: Express) => {
               const u = new URL(req.url, "http://localhost");
               const qp = u.searchParams.get("token");
               if (qp) token = qp;
-            } catch {
+            } catch (e) {
               // ignore
+              console.log("malformed query string: ", req.url);
             }
           }
 
           if (!token) {
+            console.log("no token found, checking auth header");
             const authz = (req.headers["authorization"] as string | undefined) ?? "";
             const m = authz.match(/^Bearer\s+(.+)$/i);
             if (m?.[1]) token = m[1];
           }
 
           if (!token) {
+            console.log("no token found, rejecting connection");
             ws.send(JSON.stringify({ type: "error", message: "send auth first" }));
             return;
           }
@@ -289,6 +313,7 @@ const initWebsockets = (app: Express) => {
             // @ts-ignore
             await authenticateWsAsAdmin(req, token);
           } catch (e: any) {
+            console.log("auth failed:", e);
             const statusCode = e?.statusCode ?? 401;
             ws.send(JSON.stringify({ type: "error", message: "unauthorized", statusCode }));
             try {
@@ -313,8 +338,9 @@ const initWebsockets = (app: Express) => {
         if (payload?.type === "refresh") {
           ws.send(JSON.stringify({ type: "presence", data: getPresenceSummary() }));
         }
-      } catch {
+      } catch (e) {
         // ignore malformed
+        console.log("malformed", e);
       }
     });
 

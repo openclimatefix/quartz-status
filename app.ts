@@ -137,6 +137,11 @@ export const adminHandler = (req: Request, res: Response<StatusMessageResponse>)
 
 app.get("/admin", checkJwt, checkScopes, adminHandler);
 
+// Admin presence dashboard — serves the HTML shell; actual data is gated behind WS auth
+app.get("/admin/users", (req: Request, res: Response) => {
+  res.render("presence");
+});
+
 // // Admin-only presence summary for the PoC
 // app.get("/admin/presence", checkJwt, checkScopes, (req: Request, res: Response) => {
 //   res.json(getPresenceSummary());
