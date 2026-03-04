@@ -5,7 +5,7 @@ ___
 The Quartz Status API is a RESTful API that allows you to retrieve the status of the various internal components in the Quartz framework.
 
 ## API Docs
-The Quartz Status API documentation can be found at [status.quartz.energy/docs](https://status.quartzz.energy/docs).
+The Quartz Status API documentation can be found at [status.quartz.energy/docs](https://status.quartz.energy/docs).
 
 ## Getting Started
 ### Installing
