@@ -19,11 +19,11 @@
         padding: 1rem 2rem;
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 1.5rem;
       }
       header img { height: 28px; }
-      header h1 { font-size: 1.1rem; font-weight: 600; color: #ffd203; }
-      .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+      header h1 { font-size: 1.1rem; letter-spacing: 1px; font-weight: 300; color: #ffd203; }
+      .container { max-width: 90vw; margin: 0 auto; padding: 1.5rem; }
 
       /* Connection bar */
       .conn-bar {
@@ -148,9 +148,9 @@
       /* Pills */
       .pill {
         display: inline-block;
-        padding: 0.15rem 0.5rem;
+        padding: 0 0.3rem;
         border-radius: 999px;
-        font-size: 0.72rem;
+        font-size: 0.6rem;
         font-weight: 600;
         white-space: nowrap;
         margin: 0.1rem 0.15rem;
@@ -218,7 +218,7 @@
   <body>
     <header>
       <img src="/quartz_logo.svg" alt="Quartz" />
-      <h1>User Presence</h1>
+      <h1>Live UI User Info</h1>
     </header>
 
     <div class="container">
@@ -243,14 +243,12 @@
             <div id="totalActive" class="big-number">—</div>
           </div>
           <div class="card">
-            <h2>By View</h2>
-            <table id="byView" class="breakdown">
-              <tbody></tbody>
-            </table>
+            <h2>Recent Users</h2>
+            <div id="totalRecent" class="big-number">—</div>
           </div>
           <div class="card">
-            <h2>By Aggregation</h2>
-            <table id="byAggregation" class="breakdown">
+            <h2>By View</h2>
+            <table id="byView" class="breakdown">
               <tbody></tbody>
             </table>
           </div>
@@ -397,8 +395,8 @@
 
       function render(data) {
         $("#totalActive").textContent = data.totalActive;
+        $("#totalRecent").textContent = data.recentUsers.length;
         renderTable("#byView", data.byView || {});
-        renderTable("#byAggregation", data.byAggregation || {});
         renderTable("#byNHourForecast", data.byNHourForecast || {});
 
         // Render users table
