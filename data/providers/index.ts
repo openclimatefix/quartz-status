@@ -1,7 +1,7 @@
 import express from "express";
 import { checkECMWF } from "./ecmwf";
 import { checkMetOffice } from "./metOffice";
-import { checkEUMETSAT } from "./eumetsat";
+import { checkEUMETSAT, MetSatId } from "./eumetsat";
 import { Tspec } from "tspec";
 import { RouteResponse } from "../../types";
 
@@ -39,7 +39,8 @@ ProviderCheckRouter.get("/", async (req, res) => {
   const results: ProviderStatusResponse[] = await Promise.all([
     checkECMWF(),
     checkMetOffice(),
-    checkEUMETSAT()
+    checkEUMETSAT("MET-11"),
+    checkEUMETSAT("MET-10")
   ]);
   res.json(results);
 });
@@ -55,9 +56,24 @@ ProviderCheckRouter.get("/metoffice", async (req, res) => {
 });
 
 ProviderCheckRouter.get("/eumetsat", async (req, res) => {
-  const { verbose } = req.query;
-  const result: ProviderStatusResponse = await checkEUMETSAT(verbose === "true");
-  res.json(result);
+  const { verbose, satelliteId } = req.query as { verbose?: string; satelliteId?: MetSatId };
+  try {
+    const result: ProviderStatusResponse = await checkEUMETSAT(
+      satelliteId || "MET-11",
+      verbose === "true"
+    );
+    res.json(result);
+  } catch (error: any) {
+    return res.status(500).json({
+      provider: "EUMETSAT",
+      source: satelliteId || "MET-11",
+      status: "error",
+      statusMessage: "Error checking EUMETSAT status",
+      url: "",
+      statusPageUrl: "",
+      error: error.message
+    });
+  }
 });
 
 export default ProviderCheckRouter;

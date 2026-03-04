@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Presence — Quartz Status</title>
+    <link rel="icon" href="/favicon.ico" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+        background: #1a1a1a;
+        color: #e0e0e0;
+        min-height: 100vh;
+      }
+      header {
+        background: #111;
+        border-bottom: 2px solid #ffd203;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+      header img { height: 28px; }
+      header h1 { font-size: 1.1rem; letter-spacing: 1px; font-weight: 300; color: #ffd203; }
+      .container { max-width: 90vw; margin: 0 auto; padding: 1.5rem; }
+
+      /* Connection bar */
+      .conn-bar {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+      }
+      .conn-bar input[type="password"] {
+        flex: 1;
+        min-width: 200px;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #444;
+        border-radius: 4px;
+        background: #222;
+        color: #e0e0e0;
+        font-family: monospace;
+        font-size: 0.85rem;
+      }
+      .conn-bar input::placeholder { color: #777; }
+      .btn {
+        padding: 0.5rem 1.25rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: opacity 0.15s;
+      }
+      .btn:hover { opacity: 0.85; }
+      .btn-primary { background: #ffd203; color: #111; }
+      .btn-secondary { background: #333; color: #e0e0e0; border: 1px solid #555; }
+      .btn:disabled { opacity: 0.4; cursor: default; }
+
+      /* Status indicator */
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.8rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        background: #222;
+        border: 1px solid #333;
+      }
+      .dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #555;
+      }
+      .dot.connected { background: #4caf50; }
+      .dot.error { background: #f44336; }
+      .dot.connecting { background: #ffd203; animation: pulse 1s infinite; }
+      @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+      /* Cards */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .card {
+        background: #222;
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 1.25rem;
+      }
+      .card h2 {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #999;
+        margin-bottom: 0.75rem;
+      }
+      .big-number {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #ffd203;
+        line-height: 1;
+      }
+
+      /* Breakdown tables */
+      .breakdown { width: 100%; border-collapse: collapse; }
+      .breakdown td {
+        padding: 0.35rem 0;
+        border-bottom: 1px solid #2a2a2a;
+        font-size: 0.85rem;
+      }
+      .breakdown td:first-child { color: #ccc; }
+      .breakdown td:last-child {
+        text-align: right;
+        font-weight: 600;
+        color: #ffd203;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Users table */
+      .user-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+      }
+      .user-table th {
+        text-align: left;
+        padding: 0.5rem 0.6rem;
+        border-bottom: 2px solid #444;
+        color: #999;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+      }
+      .user-table td {
+        padding: 0.45rem 0.6rem;
+        border-bottom: 1px solid #2a2a2a;
+        vertical-align: middle;
+      }
+      .user-table tr:hover td { background: #2a2a2a; }
+
+      /* Pills */
+      .pill {
+        display: inline-block;
+        padding: 0 0.3rem;
+        border-radius: 999px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        white-space: nowrap;
+        margin: 0.1rem 0.15rem;
+      }
+      .pill-view     { background: #2d3a4a; color: #7eb8f7; border: 1px solid #3a5070; }
+      .pill-agg      { background: #3a2d4a; color: #b87ef7; border: 1px solid #503a70; }
+      .pill-horizon  { background: #4a3a2d; color: #f7b87e; border: 1px solid #705a3a; }
+      .pill-line     { background: #2d4a3a; color: #7ef7b8; border: 1px solid #3a7050; }
+      .pill-line.off { background: #333; color: #666; border-color: #444; }
+      .pill-time     { background: #2d2d4a; color: #a8a8f7; border: 1px solid #3a3a70; }
+      .pill-region   { background: #4a2d3a; color: #f77eb8; border: 1px solid #703a50; }
+      .pill-bool     { background: #2a3a2a; color: #8cca8c; border: 1px solid #3a5a3a; }
+      .pill-bool.off { background: #3a2a2a; color: #ca8c8c; border: 1px solid #5a3a3a; }
+
+      .email-cell { font-family: monospace; color: #ccc; }
+      .time-cell  { color: #777; font-size: 0.75rem; white-space: nowrap; }
+      .pills-cell { line-height: 1.8; }
+
+      /* Expandable recent rows */
+      .expand-toggle {
+        cursor: pointer;
+        user-select: none;
+      }
+      .expand-toggle:hover td { background: #2a2a2a; }
+      .expand-arrow {
+        display: inline-block;
+        transition: transform 0.15s;
+        margin-right: 0.3rem;
+        color: #666;
+        font-size: 0.7rem;
+      }
+      .expand-arrow.open { transform: rotate(90deg); }
+      .session-detail { background: #1e1e1e; }
+      .session-detail td {
+        padding: 0.3rem 0.6rem 0.3rem 2rem;
+        font-size: 0.78rem;
+        color: #888;
+        border-bottom: 1px solid #252525;
+      }
+      .duration-cell { font-variant-numeric: tabular-nums; }
+      .session-count {
+        font-size: 0.7rem;
+        color: #666;
+        margin-left: 0.3rem;
+      }
+
+      /* Footer */
+      .meta {
+        font-size: 0.75rem;
+        color: #666;
+        text-align: right;
+        margin-top: 0.5rem;
+      }
+
+      /* Empty / auth state */
+      .placeholder {
+        text-align: center;
+        padding: 4rem 1rem;
+        color: #666;
+      }
+      .placeholder p { margin: 0.5rem 0; }
+      .placeholder a { color: #ffd203; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <img src="/quartz_logo.svg" alt="Quartz" />
+      <h1>Live UI User Info</h1>
+    </header>
+
+    <div class="container">
+      <div class="conn-bar">
+        <input
+          id="tokenInput"
+          type="password"
+          placeholder="Paste your JWT token (from /auth/login)"
+        />
+        <button id="connectBtn" class="btn btn-primary">Connect</button>
+        <button id="disconnectBtn" class="btn btn-secondary" disabled>Disconnect</button>
+        <span id="statusPill" class="status-pill">
+          <span id="statusDot" class="dot"></span>
+          <span id="statusText">Disconnected</span>
+        </span>
+      </div>
+
+      <div id="dashboard" style="display:none;">
+        <div class="grid">
+          <div class="card">
+            <h2>Active Users</h2>
+            <div id="totalActive" class="big-number">—</div>
+          </div>
+          <div class="card">
+            <h2>Recent Users</h2>
+            <div id="totalRecent" class="big-number">—</div>
+          </div>
+          <div class="card">
+            <h2>By View</h2>
+            <table id="byView" class="breakdown">
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <h2>By Forecast Horizon</h2>
+            <table id="byNHourForecast" class="breakdown">
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:1rem;">
+          <h2>Connected Users</h2>
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>View</th>
+                <th>Aggregation</th>
+                <th>Horizon</th>
+                <th>Visible Lines</th>
+                <th>Selected Time</th>
+                <th>Regions</th>
+                <th>Mode</th>
+                <th>Connected</th>
+                <th>Last Seen</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="card" style="margin-bottom:1rem;">
+          <h2>Recent Users</h2>
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Last View</th>
+                <th>Last Aggregation</th>
+                <th>Last Horizon</th>
+                <th>Last Time</th>
+                <th>Last Mode</th>
+                <th>Duration</th>
+                <th>Disconnected</th>
+                <th>Sessions</th>
+              </tr>
+            </thead>
+            <tbody id="recentTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="meta">
+          Last update: <span id="lastUpdate">—</span> &middot; TTL: <span id="ttl">—</span>s
+        </div>
+      </div>
+
+      <div id="placeholder" class="placeholder">
+        <p>Enter your admin JWT token above to connect to the live presence stream.</p>
+        <p>Need a token? <a href="/auth/login?redirect=/admin/users">Log in here</a> — you'll be redirected back automatically.</p>
+      </div>
+    </div>
+
+    <script>
+      const $ = (sel) => document.querySelector(sel);
+      const tokenInput = $("#tokenInput");
+      const connectBtn = $("#connectBtn");
+      const disconnectBtn = $("#disconnectBtn");
+      const statusDot = $("#statusDot");
+      const statusText = $("#statusText");
+      const dashboard = $("#dashboard");
+      const placeholder = $("#placeholder");
+
+      let ws = null;
+
+      // Restore saved token
+      const saved = localStorage.getItem("quartz_admin_token");
+      if (saved) tokenInput.value = saved;
+
+      function setStatus(state, text) {
+        statusDot.className = "dot " + state;
+        statusText.textContent = text;
+      }
+
+      function connect() {
+        const token = tokenInput.value.trim();
+        if (!token) return;
+        localStorage.setItem("quartz_admin_token", token);
+
+        if (ws) ws.close();
+
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        ws = new WebSocket(proto + "//" + location.host + "/admin/users/presence");
+
+        setStatus("connecting", "Connecting\u2026");
+        connectBtn.disabled = true;
+        disconnectBtn.disabled = false;
+
+        ws.onopen = () => {
+          ws.send(JSON.stringify({ type: "auth", token }));
+          setStatus("connecting", "Authenticating\u2026");
+        };
+
+        ws.onmessage = (evt) => {
+          let msg;
+          try { msg = JSON.parse(evt.data); } catch { return; }
+
+          if (msg.type === "ack" && msg.message === "authorized") {
+            setStatus("connected", "Connected");
+            dashboard.style.display = "";
+            placeholder.style.display = "none";
+            return;
+          }
+
+          if (msg.type === "error") {
+            setStatus("error", "Error: " + msg.message);
+            disconnect();
+            return;
+          }
+
+          if (msg.type === "presence" && msg.data) {
+            render(msg.data);
+          }
+        };
+
+        ws.onclose = () => {
+          setStatus("", "Disconnected");
+          connectBtn.disabled = false;
+          disconnectBtn.disabled = true;
+          ws = null;
+        };
+
+        ws.onerror = (e) => {
+          console.log("Error: ", e);
+          setStatus("error", "Connection error");
+        };
+      }
+
+      function disconnect() {
+        if (ws) { ws.close(); ws = null; }
+        connectBtn.disabled = false;
+        disconnectBtn.disabled = true;
+      }
+
+      function render(data) {
+        $("#totalActive").textContent = data.totalActive;
+        $("#totalRecent").textContent = data.recentUsers.length;
+        renderTable("#byView", data.byView || {});
+        renderTable("#byNHourForecast", data.byNHourForecast || {});
+
+        // Render users table
+        const tbody = $("#usersTableBody");
+        tbody.innerHTML = "";
+        const users = data.users || [];
+
+        if (!users.length) {
+          tbody.innerHTML = '<tr><td colspan="10" style="color:#555;text-align:center;padding:1.5rem;">No active users</td></tr>';
+        }
+
+        for (const u of users) {
+          const tr = document.createElement("tr");
+          tr.innerHTML =
+            '<td class="email-cell">' + escHtml(u.email) + '</td>' +
+            '<td class="pills-cell">' + (u.view ? pill(u.view, "view") : dim("—")) + '</td>' +
+            '<td class="pills-cell">' + (u.aggregation ? pill(u.aggregation, "agg") : dim("—")) + '</td>' +
+            '<td class="pills-cell">' + horizonPills(u) + '</td>' +
+            '<td class="pills-cell">' + (u.visibleLines.length ? u.visibleLines.map(l => pill(shortLine(l), "line")).join("") : dim("—")) + '</td>' +
+            '<td class="pills-cell">' + (u.selectedTime ? pill(fmtTime(u.selectedTime), "time") : dim("—")) + '</td>' +
+            '<td class="pills-cell">' + (u.selectedRegionIds && u.selectedRegionIds.length ? u.selectedRegionIds.map(r => pill(r, "region")).join("") : dim("—")) + '</td>' +
+            '<td class="pills-cell">' + modePills(u) + '</td>' +
+            '<td class="time-cell">' + timeAgo(u.connectedAt) + '</td>' +
+            '<td class="time-cell">' + timeAgo(u.lastSeenAt) + '</td>';
+          tbody.appendChild(tr);
+        }
+
+        // Render recent users table
+        renderRecentUsers(data.recentUsers || []);
+
+        if (data.asOf) {
+          $("#lastUpdate").textContent = new Date(data.asOf).toLocaleTimeString();
+        }
+        if (data.ttlMs) {
+          $("#ttl").textContent = (data.ttlMs / 1000).toFixed(0);
+        }
+      }
+
+      // Track which users are expanded (persists across renders)
+      const expandedUsers = new Set();
+
+      function renderRecentUsers(recentUsers) {
+        const tbody = $("#recentTableBody");
+        tbody.innerHTML = "";
+
+        if (!recentUsers.length) {
+          tbody.innerHTML = '<tr><td colspan="9" style="color:#555;text-align:center;padding:1.5rem;">No recent sessions</td></tr>';
+          return;
+        }
+
+        for (const ru of recentUsers) {
+          const last = ru.lastSession;
+          const isExpanded = expandedUsers.has(ru.email);
+
+          // Summary row
+          const tr = document.createElement("tr");
+          tr.className = "expand-toggle";
+          tr.innerHTML =
+            '<td class="email-cell"><span class="expand-arrow' + (isExpanded ? " open" : "") + '">&#9654;</span>' + escHtml(ru.email) + '</td>' +
+            '<td class="pills-cell">' + (last.view ? pill(last.view, "view") : dim("—")) + '</td>' +
+            '<td class="pills-cell">' + (last.aggregation ? pill(last.aggregation, "agg") : dim("—")) + '</td>' +
+            '<td class="pills-cell">' + horizonPills(last) + '</td>' +
+            '<td class="pills-cell">' + (last.selectedTime ? pill(fmtTime(last.selectedTime), "time") : dim("—")) + '</td>' +
+            '<td class="pills-cell">' + (last.dashboardMode != null ? boolPill("Dashboard", last.dashboardMode) : dim("—")) + '</td>' +
+            '<td class="time-cell duration-cell">' + formatDuration(last.durationMs) + '</td>' +
+            '<td class="time-cell">' + timeAgo(last.disconnectedAt) + '</td>' +
+            '<td class="time-cell">' + ru.totalSessions + '<span class="session-count">session' + (ru.totalSessions === 1 ? "" : "s") + '</span></td>';
+          tr.addEventListener("click", () => {
+            if (expandedUsers.has(ru.email)) expandedUsers.delete(ru.email);
+            else expandedUsers.add(ru.email);
+            renderRecentUsers(recentUsers);
+          });
+          tbody.appendChild(tr);
+
+          // Expanded session rows
+          if (isExpanded) {
+            // Show sessions in reverse chronological order
+            const sessions = [...ru.sessions].reverse();
+            for (const s of sessions) {
+              const detail = document.createElement("tr");
+              detail.className = "session-detail";
+              detail.innerHTML =
+                '<td></td>' +
+                '<td>' + (s.view ? pill(s.view, "view") : dim("—")) + '</td>' +
+                '<td>' + (s.aggregation ? pill(s.aggregation, "agg") : dim("—")) + '</td>' +
+                '<td>' + horizonPills(s) + '</td>' +
+                '<td>' + (s.selectedTime ? pill(fmtTime(s.selectedTime), "time") : dim("—")) + '</td>' +
+                '<td>' + (s.dashboardMode != null ? boolPill("Dashboard", s.dashboardMode) : dim("—")) + '</td>' +
+                '<td class="duration-cell">' + formatDuration(s.durationMs) + '</td>' +
+                '<td>' + new Date(s.disconnectedAt).toLocaleString() + '</td>' +
+                '<td></td>';
+              tbody.appendChild(detail);
+            }
+          }
+        }
+      }
+
+      function formatDuration(ms) {
+        if (ms == null) return "—";
+        const secs = Math.floor(ms / 1000);
+        if (secs < 60) return secs + "s";
+        const mins = Math.floor(secs / 60);
+        const remSecs = secs % 60;
+        if (mins < 60) return mins + "m " + remSecs + "s";
+        const hrs = Math.floor(mins / 60);
+        const remMins = mins % 60;
+        return hrs + "h " + remMins + "m";
+      }
+
+      function pill(text, cls) {
+        return '<span class="pill pill-' + cls + '">' + escHtml(String(text)) + '</span>';
+      }
+
+      function boolPill(label, val) {
+        return '<span class="pill pill-bool' + (val ? '' : ' off') + '">' + escHtml(label) + '</span>';
+      }
+
+      function dim(text) {
+        return '<span style="color:#555;">' + escHtml(text) + '</span>';
+      }
+
+      // Format ISO time to short HH:MM
+      function fmtTime(iso) {
+        if (!iso) return "—";
+        try {
+          const d = new Date(iso);
+          // If is today, just return time string
+          if( d.toDateString() === new Date().toDateString()){
+          return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          } else {
+            // Otherwise, return date and time string
+            return d.getDate() + "/" + d.getMonth().toString().padStart(2, "0") + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          }
+        } catch { return iso; }
+      }
+
+      // Horizon column: show N-hr pill + N-hr view on/off
+      function horizonPills(u) {
+        const parts = [];
+        if (u.nHourForecast != null) parts.push(pill(u.nHourForecast + "hr", "horizon"));
+        if (u.showNHourView != null) parts.push(boolPill("N-hr view", u.showNHourView));
+        return parts.length ? parts.join("") : dim("—");
+      }
+
+      // Mode column: dashboard mode + any other toggles
+      function modePills(u) {
+        const parts = [];
+        if (u.dashboardMode != null) parts.push(boolPill("Dashboard", u.dashboardMode));
+        return parts.length ? parts.join("") : dim("—");
+      }
+
+      // Shorten long line names for readability
+      const LINE_SHORT = {
+        GENERATION: "PV Live",
+        GENERATION_UPDATED: "PV Updated",
+        FORECAST: "OCF Latest",
+        N_HOUR_FORECAST: "N-hour",
+        INTRADAY_ECMWF_ONLY: "ECMWF",
+        MET_OFFICE_ONLY: "Met Office",
+        SAT_ONLY: "Satellite"
+      };
+      function shortLine(key) {
+        return LINE_SHORT[key] || key;
+      }
+
+      function timeAgo(ts) {
+        if (!ts) return "—";
+        const secs = Math.round((Date.now() - ts) / 1000);
+        if (secs < 5) return "just now";
+        if (secs < 60) return secs + "s ago";
+        const mins = Math.round(secs / 60);
+        if (mins < 60) return mins + "m ago";
+        return Math.round(mins / 60) + "h ago";
+      }
+
+      function renderTable(sel, obj) {
+        const tbody = document.querySelector(sel + " tbody");
+        tbody.innerHTML = "";
+        const entries = Object.entries(obj).sort((a, b) => b[1] - a[1]);
+        if (!entries.length) {
+          tbody.innerHTML = '<tr><td colspan="2" style="color:#555;">No data</td></tr>';
+          return;
+        }
+        for (const [key, val] of entries) {
+          const tr = document.createElement("tr");
+          tr.innerHTML =
+            "<td>" + escHtml(key) + "</td><td>" + escHtml(String(val)) + "</td>";
+          tbody.appendChild(tr);
+        }
+      }
+
+      function escHtml(s) {
+        const d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      // Check for token in URL hash (from OAuth redirect)
+      const hashParams = new URLSearchParams(location.hash.slice(1));
+      const hashToken = hashParams.get("token");
+      if (hashToken) {
+        tokenInput.value = hashToken;
+        localStorage.setItem("quartz_admin_token", hashToken);
+        history.replaceState(null, "", location.pathname);
+        connect();
+      }
+
+      connectBtn.addEventListener("click", connect);
+      disconnectBtn.addEventListener("click", disconnect);
+      tokenInput.addEventListener("keydown", (e) => { if (e.key === "Enter") connect(); });
+    </script>
+  </body>
+</html>
