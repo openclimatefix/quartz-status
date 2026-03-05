@@ -219,6 +219,11 @@
     <header>
       <img src="/quartz_logo.svg" alt="Quartz" />
       <h1>Live UI User Info</h1>
+      <div style="margin-left:auto;">
+        <select id="domainFilter" class="btn btn-secondary" style="font-weight:400;padding:0.5rem 0.75rem;">
+          <option value="">All Domains</option>
+        </select>
+      </div>
     </header>
 
     <div class="container">
@@ -393,16 +398,39 @@
         disconnectBtn.disabled = true;
       }
 
+      let lastData = null;
+      const domainFilter = $("#domainFilter");
+
+      domainFilter.addEventListener("change", () => { if (lastData) renderTables(lastData); });
+
       function render(data) {
-        $("#totalActive").textContent = data.totalActive;
-        $("#totalRecent").textContent = data.recentUsers.length;
+        lastData = data;
+
+        // Populate domain dropdown, preserving current selection
+        const selected = domainFilter.value;
+        const domains = [...new Set([
+          ...(data.users || []).map(u => u.domain),
+          ...(data.recentUsers || []).map(u => u.lastSession?.domain || "")
+        ])].filter(Boolean).sort();
+        domainFilter.innerHTML = '<option value="">All Domains</option>' +
+          domains.map(d => `<option value="${escHtml(d)}"${d === selected ? " selected" : ""}>${escHtml(d)}</option>`).join("");
+
+        renderTables(data);
+      }
+
+      function renderTables(data) {
+        const domain = domainFilter.value;
+        const users = (data.users || []).filter(u => !domain || u.domain === domain);
+        const recentUsers = (data.recentUsers || []).filter(u => !domain || u.lastSession?.domain === domain);
+
+        $("#totalActive").textContent = users.length;
+        $("#totalRecent").textContent = recentUsers.length;
         renderTable("#byView", data.byView || {});
         renderTable("#byNHourForecast", data.byNHourForecast || {});
 
         // Render users table
         const tbody = $("#usersTableBody");
         tbody.innerHTML = "";
-        const users = data.users || [];
 
         if (!users.length) {
           tbody.innerHTML = '<tr><td colspan="10" style="color:#555;text-align:center;padding:1.5rem;">No active users</td></tr>';
@@ -425,7 +453,7 @@
         }
 
         // Render recent users table
-        renderRecentUsers(data.recentUsers || []);
+        renderRecentUsers(recentUsers);
 
         if (data.asOf) {
           $("#lastUpdate").textContent = new Date(data.asOf).toLocaleTimeString();

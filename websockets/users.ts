@@ -14,6 +14,7 @@ type PresenceMeta = {
   ip?: string;
   userAgent?: string;
   // Client-provided fields:
+  domain?: string;
   view?: string;
   aggregation?: string;
   visibleLines?: string[];
@@ -29,6 +30,7 @@ const presenceById = new Map<string, PresenceMeta>();
 
 // --- Session history (in-memory, resets on deploy) ---
 type SessionRecord = {
+  domain: string;
   sessionId: string;
   email: string;
   connectedAt: number;
@@ -53,6 +55,7 @@ const recordSession = (sessionId: string, meta: PresenceMeta) => {
   const record: SessionRecord = {
     sessionId,
     email,
+    domain: meta.domain ?? "unknown",
     connectedAt: meta.connectedAt,
     disconnectedAt: now,
     durationMs: now - meta.connectedAt,
@@ -120,6 +123,7 @@ const getPresenceSummary = () => {
 
   const users = Array.from(presenceById.entries()).map(([id, meta]) => ({
     id,
+    domain: meta.domain ?? "unknown",
     email: meta.email ?? "unknown",
     view: meta.view ?? null,
     aggregation: meta.aggregation ?? null,
@@ -278,6 +282,7 @@ const initWebsockets = (app: Express) => {
 
         if (payload?.type === "presence") {
           if (typeof payload.email === "string") meta.email = payload.email;
+          if (typeof payload.domain === "string") meta.domain = payload.domain;
           if (typeof payload.userHash === "string") meta.email = payload.userHash;
           if (typeof payload.view === "string") meta.view = payload.view;
           if (typeof payload.aggregation === "string") meta.aggregation = payload.aggregation;
