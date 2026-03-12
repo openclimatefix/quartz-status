@@ -14,8 +14,10 @@ type PresenceMeta = {
   ip?: string;
   userAgent?: string;
   // Client-provided fields:
+  domain?: string;
   view?: string;
   aggregation?: string;
+  mapUnit?: string;
   visibleLines?: string[];
   nHourForecast?: number;
   showNHourView?: boolean;
@@ -29,6 +31,7 @@ const presenceById = new Map<string, PresenceMeta>();
 
 // --- Session history (in-memory, resets on deploy) ---
 type SessionRecord = {
+  domain: string;
   sessionId: string;
   email: string;
   connectedAt: number;
@@ -36,6 +39,7 @@ type SessionRecord = {
   durationMs: number;
   view?: string;
   aggregation?: string;
+  mapUnit?: string;
   nHourForecast?: number;
   showNHourView?: boolean;
   visibleLines?: string[];
@@ -51,19 +55,12 @@ const recordSession = (sessionId: string, meta: PresenceMeta) => {
   const email = meta.email ?? "unknown";
   const now = Date.now();
   const record: SessionRecord = {
+    ...meta,
     sessionId,
     email,
-    connectedAt: meta.connectedAt,
+    domain: meta.domain ?? "unknown",
     disconnectedAt: now,
-    durationMs: now - meta.connectedAt,
-    view: meta.view,
-    aggregation: meta.aggregation,
-    nHourForecast: meta.nHourForecast,
-    showNHourView: meta.showNHourView,
-    visibleLines: meta.visibleLines,
-    selectedTime: meta.selectedTime,
-    selectedRegionIds: meta.selectedRegionIds,
-    dashboardMode: meta.dashboardMode
+    durationMs: now - meta.connectedAt
   };
 
   const existing = sessionsByUser.get(email) ?? [];
@@ -120,9 +117,11 @@ const getPresenceSummary = () => {
 
   const users = Array.from(presenceById.entries()).map(([id, meta]) => ({
     id,
+    domain: meta.domain ?? "unknown",
     email: meta.email ?? "unknown",
     view: meta.view ?? null,
     aggregation: meta.aggregation ?? null,
+    mapUnit: meta.mapUnit ?? null,
     nHourForecast: meta.nHourForecast ?? null,
     showNHourView: meta.showNHourView ?? false,
     visibleLines: meta.visibleLines ?? [],
@@ -278,8 +277,10 @@ const initWebsockets = (app: Express) => {
 
         if (payload?.type === "presence") {
           if (typeof payload.email === "string") meta.email = payload.email;
+          if (typeof payload.domain === "string") meta.domain = payload.domain;
           if (typeof payload.userHash === "string") meta.email = payload.userHash;
           if (typeof payload.view === "string") meta.view = payload.view;
+          if (typeof payload.mapUnit === "string") meta.mapUnit = payload.mapUnit;
           if (typeof payload.aggregation === "string") meta.aggregation = payload.aggregation;
           if (typeof payload.nHourForecast === "number") meta.nHourForecast = payload.nHourForecast;
           if (typeof payload.showNHourView === "boolean")
