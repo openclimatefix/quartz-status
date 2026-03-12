@@ -133,7 +133,7 @@
         padding: 0.5rem 0.6rem;
         border-bottom: 2px solid #444;
         color: #999;
-        font-size: 0.72rem;
+        font-size: 0.6rem;
         text-transform: uppercase;
         letter-spacing: 0.04em;
         white-space: nowrap;
@@ -272,12 +272,12 @@
               <tr>
                 <th>User</th>
                 <th>View</th>
-                <th>Aggregation</th>
+                <th>Map Settings</th>
                 <th>Horizon</th>
                 <th>Visible Lines</th>
                 <th>Selected Time</th>
                 <th>Regions</th>
-                <th>Mode</th>
+                <th>User Settings</th>
                 <th>Connected</th>
                 <th>Last Seen</th>
               </tr>
@@ -293,10 +293,10 @@
               <tr>
                 <th>User</th>
                 <th>Last View</th>
-                <th>Last Aggregation</th>
+                <th>Last Map Settings</th>
                 <th>Last Horizon</th>
                 <th>Last Time</th>
-                <th>Last Mode</th>
+                <th>Last User Settings</th>
                 <th>Duration</th>
                 <th>Disconnected</th>
                 <th>Sessions</th>
@@ -441,7 +441,7 @@
           tr.innerHTML =
             '<td class="email-cell">' + escHtml(u.email) + '</td>' +
             '<td class="pills-cell">' + (u.view ? pill(u.view, "view") : dim("—")) + '</td>' +
-            '<td class="pills-cell">' + (u.aggregation ? pill(u.aggregation, "agg") : dim("—")) + '</td>' +
+            '<td class="pills-cell">' + pill(u.aggregation, "agg") + pill(u.mapUnit, "agg") + '</td>' +
             '<td class="pills-cell">' + horizonPills(u) + '</td>' +
             '<td class="pills-cell">' + (u.visibleLines.length ? u.visibleLines.map(l => pill(shortLine(l), "line")).join("") : dim("—")) + '</td>' +
             '<td class="pills-cell">' + (u.selectedTime ? pill(fmtTime(u.selectedTime), "time") : dim("—")) + '</td>' +
@@ -485,10 +485,10 @@
           tr.innerHTML =
             '<td class="email-cell"><span class="expand-arrow' + (isExpanded ? " open" : "") + '">&#9654;</span>' + escHtml(ru.email) + '</td>' +
             '<td class="pills-cell">' + (last.view ? pill(last.view, "view") : dim("—")) + '</td>' +
-            '<td class="pills-cell">' + (last.aggregation ? pill(last.aggregation, "agg") : dim("—")) + '</td>' +
+            '<td class="pills-cell">' + pill(last.aggregation, "agg") + pill(last.mapUnit, "agg") + '</td>' +
             '<td class="pills-cell">' + horizonPills(last) + '</td>' +
             '<td class="pills-cell">' + (last.selectedTime ? pill(fmtTime(last.selectedTime), "time") : dim("—")) + '</td>' +
-            '<td class="pills-cell">' + (last.dashboardMode != null ? boolPill("Dashboard", last.dashboardMode) : dim("—")) + '</td>' +
+            '<td class="pills-cell">' + modePills(last) + '</td>' +
             '<td class="time-cell duration-cell">' + formatDuration(last.durationMs) + '</td>' +
             '<td class="time-cell">' + timeAgo(last.disconnectedAt) + '</td>' +
             '<td class="time-cell">' + ru.totalSessions + '<span class="session-count">session' + (ru.totalSessions === 1 ? "" : "s") + '</span></td>';
@@ -512,7 +512,9 @@
                 '<td>' + (s.aggregation ? pill(s.aggregation, "agg") : dim("—")) + '</td>' +
                 '<td>' + horizonPills(s) + '</td>' +
                 '<td>' + (s.selectedTime ? pill(fmtTime(s.selectedTime), "time") : dim("—")) + '</td>' +
-                '<td>' + (s.dashboardMode != null ? boolPill("Dashboard", s.dashboardMode) : dim("—")) + '</td>' +
+                '<td>' + (s.dashboardMode != null || s.showNHourView != null
+                              ? (boolPill("Dashboard", s.dashboardMode) + boolPill("N-hr view", s.showNHourView))
+                              : dim("—")) + '</td>' +
                 '<td class="duration-cell">' + formatDuration(s.durationMs) + '</td>' +
                 '<td>' + new Date(s.disconnectedAt).toLocaleString() + '</td>' +
                 '<td></td>';
@@ -565,7 +567,6 @@
       function horizonPills(u) {
         const parts = [];
         if (u.nHourForecast != null) parts.push(pill(u.nHourForecast + "hr", "horizon"));
-        if (u.showNHourView != null) parts.push(boolPill("N-hr view", u.showNHourView));
         return parts.length ? parts.join("") : dim("—");
       }
 
@@ -573,6 +574,7 @@
       function modePills(u) {
         const parts = [];
         if (u.dashboardMode != null) parts.push(boolPill("Dashboard", u.dashboardMode));
+        if (u.showNHourView != null) parts.push(boolPill("N-hr view", u.showNHourView));
         return parts.length ? parts.join("") : dim("—");
       }
 
